@@ -20,5 +20,6 @@
 
     <color name="pressed_blue">#0D47A1</color>          <!-- Blue 900 for pressed state -->
     <color name="light_grey_divider">#FFE0E0E0</color>
+    <color name="nav_item_ripple">#1F2196F3</color>
 
 </resources>

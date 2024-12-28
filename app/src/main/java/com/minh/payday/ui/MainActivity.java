@@ -1,43 +1,56 @@
 package com.minh.payday.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.TextView;
-
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
-import com.google.firebase.auth.FirebaseAuth;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.minh.payday.R;
-import com.minh.payday.ui.auth.LoginActivity;
+import com.minh.payday.ui.chat.ChatFragment;
+import com.minh.payday.ui.groups.GroupsFragment;
+import com.minh.payday.ui.insight.InsightFragment;
+import com.minh.payday.ui.profile.ProfileFragment;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView textWelcome;
-    private Button buttonLogout;
+    private BottomNavigationView bottomNavView;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);  // <-- The layout "view" for MainActivity
+        setContentView(R.layout.activity_main);
 
-        // Find views
-        textWelcome = findViewById(R.id.textWelcomeMain);
-        buttonLogout = findViewById(R.id.buttonLogout);
+        bottomNavView = findViewById(R.id.bottomNavView);
 
-        // Optionally, display the current user’s email or name
-        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            String userEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-            textWelcome.setText(getString(R.string.main_welcome_user, userEmail));
+        // Load default fragment (Groups, for instance)
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.containerMain, new GroupsFragment())
+                    .commit();
         }
 
-        // Handle logout
-        buttonLogout.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            // After signOut, go back to Login
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            finish();
+        // Handle item selection with if-else blocks instead of switch/case
+        bottomNavView.setOnItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.nav_groups) {
+                selectedFragment = new GroupsFragment();
+            } else if (itemId == R.id.nav_chat) {
+                selectedFragment = new ChatFragment();
+            } else if (itemId == R.id.nav_insight) {
+                selectedFragment = new InsightFragment();
+            } else if (itemId == R.id.nav_profile) {
+                selectedFragment = new ProfileFragment();
+            }
+
+            if (selectedFragment != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.containerMain, selectedFragment)
+                        .commit();
+                return true; // indicates handled
+            }
+            return false;
         });
     }
 }
