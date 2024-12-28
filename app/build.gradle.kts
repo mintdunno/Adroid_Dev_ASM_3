@@ -57,6 +57,7 @@ dependencies {
     // Image Loading & UI
     // ---------------------------------------------------------
     implementation(libs.glide)
+    implementation(libs.activity)
     annotationProcessor(libs.compiler)
     implementation(libs.circleimageview)
     
