@@ -20,6 +20,8 @@ public class LoginActivity extends AppCompatActivity {
     private EditText editTextEmail, editTextPassword;
     private Button buttonLogin;
     private TextView textForgotPassword;
+    private TextView textRegisterLink;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -31,6 +33,7 @@ public class LoginActivity extends AppCompatActivity {
         editTextPassword = findViewById(R.id.editTextPassword);
         buttonLogin = findViewById(R.id.buttonLogin);
         textForgotPassword = findViewById(R.id.textForgotPassword);
+        textRegisterLink = findViewById(R.id.textRegisterLink);
 
         // Click: Login
         buttonLogin.setOnClickListener(v -> {
@@ -47,6 +50,13 @@ public class LoginActivity extends AppCompatActivity {
         // Click: Forgot Password
         textForgotPassword.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class));
+        });
+
+        // Click: Click Register
+        textRegisterLink.setOnClickListener(v -> {
+            // Go to RegisterActivity
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
         });
     }
 

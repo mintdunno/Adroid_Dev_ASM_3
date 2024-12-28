@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.minh.payday"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.minh.payday"
@@ -64,9 +64,9 @@ dependencies {
     // ---------------------------------------------------------
     // Optional Payment Libraries
     // ---------------------------------------------------------
-     implementation("com.android.billingclient:billing:7.1.1")
-     implementation("com.stripe:stripe-android:20.22.2")
-     implementation("com.paypal.sdk:paypal-android-sdk:2.16.0")
+//     implementation("com.android.billingclient:billing:7.1.1")
+//     implementation("com.stripe:stripe-android:20.22.2")
+//     implementation("com.paypal.sdk:paypal-android-sdk:2.16.0")
     
     // ---------------------------------------------------------
     // Testing
