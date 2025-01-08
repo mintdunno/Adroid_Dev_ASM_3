@@ -1,10 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.PayDay" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.PayDay" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorBackground">@color/light_background</item>
         <!-- Light color assignments -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorPrimary">@color/green_primary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDarkGreen</item>
         <item name="colorOnPrimary">@android:color/white</item>
 
         <item name="colorSecondary">@color/colorAccent</item>
@@ -15,7 +15,20 @@
 
         <item name="android:textColorPrimary">@color/light_on_background</item>
         <item name="android:textColorSecondary">@color/light_on_surface</item>
-        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
-        <item name="android:navigationBarColor">@color/colorPrimaryDark</item>
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:navigationBarColor">@color/colorPrimaryDarkGreen</item>
+    </style>
+
+
+    <style name="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Green" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <!-- Default box color -->
+        <item name="boxStrokeColor">@color/green_primary</item>
+        <!-- Hint text color -->
+        <item name="hintTextColor">@color/green_primary</item>
+        <!-- Focused stroke color -->
+        <item name="colorControlActivated">@color/green_primary</item>
+        <!-- Placeholder text color -->
+        <item name="android:textColorHint">@color/green_primary</item>
     </style>
 </resources>
+

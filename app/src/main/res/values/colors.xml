@@ -6,6 +6,10 @@
     <color name="colorPrimaryDark">#1565C0</color>  <!-- Blue 700 -->
     <color name="colorAccent">#64B5F6</color>       <!-- Blue 300 (hover/focus) -->
 
+    <!-- Primary Greens -->
+    <color name="green_primary">#33AB25</color>
+    <color name="colorPrimaryDarkGreen">#228B22</color>   <!-- Green 700 -->
+    <color name="colorAccentGreen">#66C266</color>
     <!-- Light Theme Neutrals -->
     <color name="light_background">#FFFFFFFF</color>
     <color name="light_surface">#FFF5F5F5</color>
@@ -21,5 +25,8 @@
     <color name="pressed_blue">#0D47A1</color>          <!-- Blue 900 for pressed state -->
     <color name="light_grey_divider">#FFE0E0E0</color>
     <color name="nav_item_ripple">#1F2196F3</color>
+
+    <color name="white">#FFFFFF</color>
+
 
 </resources>

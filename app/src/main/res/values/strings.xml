@@ -4,9 +4,12 @@
     <string name="app_name">PayDay</string>
 
     <!-- Splash / General -->
-    <string name="welcome_back">Welcome Back!</string>
-    <string name="create_account">Create Account</string>
+    <string name="log_in">LOG IN</string>
+    <string name="create_account">SIGN UP</string>
     <string name="reset_password">Reset Password</string>
+    <string name="app_logo">App Logo</string>
+    <string name="app_slogan">App Slogan</string>
+
 
     <!-- Login Screen -->
     <string name="hint_email">Email Address</string>
@@ -14,6 +17,9 @@
     <string name="login">Login</string>
     <string name="forgot_password_question">Forgot Password?</string>
     <string name="dont_have_account_register">Don\'t have an account? Register</string>
+    <string name="phone_number">Phone number</string>
+    <string name="show_password">Show Password</string>
+    <string name="hide_password">Hide Password</string>
 
     <!-- Register Screen -->
     <string name="hint_first_name">First Name</string>
