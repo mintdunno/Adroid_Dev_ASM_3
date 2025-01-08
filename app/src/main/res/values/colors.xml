@@ -1,26 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- Primary Blues -->
-    <color name="colorPrimary">#2196F3</color>      <!-- Blue 500 -->
-    <color name="colorPrimaryDark">#1565C0</color>  <!-- Blue 700 -->
-    <color name="colorAccent">#64B5F6</color>       <!-- Blue 300 (hover/focus) -->
-    <color name="white">#FFFFFF</color>       <!-- Blue 300 (hover/focus) -->
+    <color name="colorPrimary">#9575CD</color>
+    <color name="lavender">#9575CD</color>
+    <!-- Blue 500 -->
+    <color name="colorPrimaryDark">#654CAF</color> <!-- Blue 700 -->
+    <color name="colorAccent">#9575CD</color>
+    <!-- Blue 300 (hover/focus) -->
 
     <!-- Light Theme Neutrals -->
     <color name="light_background">#FFFFFFFF</color>
     <color name="light_surface">#FFF5F5F5</color>
     <color name="light_on_background">#FF212121</color> <!-- Dark grey for text -->
-    <color name="light_on_surface">#FF616161</color>    <!-- Medium grey for secondary text -->
+    <color name="light_on_surface">#FF616161</color>
+    <!-- Medium grey for secondary text -->
 
     <!-- Dark Theme Neutrals -->
-    <color name="dark_background">#FF121212</color>     <!-- Near-black background -->
-    <color name="dark_surface">#FF1E1E1E</color>
-    <color name="dark_on_background">#FFFFFFFF</color>  <!-- White text on dark BG -->
-    <color name="dark_on_surface">#FFBDBDBD</color>     <!-- Lighter grey for secondary text -->
+    <color name="dark_background">#FF212121</color>
+    <color name="dark_surface">#FF292929</color>
+    <color name="dark_on_background">#FFFFFFFF</color> <!-- White text on dark BG -->
+    <color name="dark_on_surface">#FFBDBDBD</color>
+    <!-- Near-black background -->
+    <!-- Lighter grey for secondary text -->
 
-    <color name="pressed_blue">#0D47A1</color>          <!-- Blue 900 for pressed state -->
+    <color name="pressed_blue">#0D47A1</color>
+    <!-- Blue 900 for pressed state -->
     <color name="light_grey_divider">#FFE0E0E0</color>
     <color name="nav_item_ripple">#1F2196F3</color>
 
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
 </resources>

@@ -58,8 +58,10 @@ dependencies {
     // ---------------------------------------------------------
     implementation(libs.glide)
     implementation(libs.activity)
+    implementation(libs.firebase.crashlytics.buildtools)
     annotationProcessor(libs.compiler)
     implementation(libs.circleimageview)
+    implementation ("com.google.code.gson:gson:2.10.1")
     
     // ---------------------------------------------------------
     // Optional Payment Libraries

@@ -52,6 +52,7 @@ public class CreateOfflineGroupActivity extends AppCompatActivity {
         Group group = new Group();
         group.setGroupName(groupName);
         group.setDescription(groupDescription);
+        group.setOnline(false);
 
         // Convert comma-separated member names to a list
         List<String> members = new ArrayList<>();

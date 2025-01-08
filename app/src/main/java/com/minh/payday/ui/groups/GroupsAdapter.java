@@ -55,7 +55,6 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.GroupViewH
         this.groups = groups;
         notifyDataSetChanged();
     }
-
     static class GroupViewHolder extends RecyclerView.ViewHolder {
         TextView groupNameTextView;
         // Other views in your item_group.xml

@@ -56,6 +56,7 @@ public class CreateOnlineGroupActivity extends AppCompatActivity {
         group.setGroupName(groupName);
         group.setDescription(groupDescription);
         group.setOwnerId(currentUserId);
+        group.setOnline(true);
 
         // Add the current user as the first member
         List<String> members = new ArrayList<>();

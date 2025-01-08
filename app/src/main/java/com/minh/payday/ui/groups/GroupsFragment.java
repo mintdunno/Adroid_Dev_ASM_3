@@ -2,6 +2,7 @@ package com.minh.payday.ui.groups;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +16,11 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Group;
@@ -32,6 +36,10 @@ public class GroupsFragment extends Fragment {
     private GroupsAdapter groupsAdapter;
     private FloatingActionButton createGroupFab;
     private Button joinGroupButton;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
+    private AppBarLayout appBarLayout;
+    private GroupPagerAdapter groupPagerAdapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,26 +51,38 @@ public class GroupsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_groups, container, false);
 
-        groupsRecyclerView = view.findViewById(R.id.groupsRecyclerView);
+        appBarLayout = view.findViewById(R.id.appBarLayout);
+        viewPager = view.findViewById(R.id.viewPager);
+        tabLayout = view.findViewById(R.id.tabLayout);
         createGroupFab = view.findViewById(R.id.createGroupFab);
         joinGroupButton = view.findViewById(R.id.joinGroupButton);
 
+        // Set up the ViewPager and TabLayout
+        setupViewPagerAndTabs();
+
+        // Set up the RecyclerView and observe groups
         setupRecyclerView();
         observeGroups();
+
+        // Set up click listeners for buttons
         setupClickListeners();
 
         return view;
     }
 
+    private void setupViewPagerAndTabs() {
+        groupPagerAdapter = new GroupPagerAdapter(getChildFragmentManager());
+        viewPager.setAdapter(groupPagerAdapter);
+        tabLayout.setupWithViewPager(viewPager);
+    }
+
     private void setupRecyclerView() {
         groupsAdapter = new GroupsAdapter(new ArrayList<>(), group -> {
-            // Navigate to GroupDetailsActivity when a group is clicked
             Intent intent = new Intent(getActivity(), GroupDetailsActivity.class);
             intent.putExtra("groupId", group.getGroupId());
             startActivity(intent);
         });
-        groupsRecyclerView.setAdapter(groupsAdapter);
-        groupsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        // Remove the RecyclerView setup
     }
 
     private void observeGroups() {
@@ -71,11 +91,10 @@ public class GroupsFragment extends Fragment {
             groupsViewModel.fetchGroupsForUser(currentUserId);
             groupsViewModel.getUserGroupsLiveData().observe(getViewLifecycleOwner(), groups -> {
                 if (groups != null) {
-                    groupsAdapter.setGroups(groups);
+                    Log.d("GroupsFragment", "Groups received: " + groups.size()); // Log received groups
+                    groupPagerAdapter.setGroups(groups);
                 }
             });
-
-            // Observe the status message LiveData for updates from the ViewModel
             groupsViewModel.getStatusMessage().observe(getViewLifecycleOwner(), message -> {
                 if (message != null) {
                     Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
@@ -116,7 +135,6 @@ public class GroupsFragment extends Fragment {
     }
 
     private String getCurrentUserId() {
-        // Assuming you are using Firebase Authentication
         return FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid()
                 : null;
