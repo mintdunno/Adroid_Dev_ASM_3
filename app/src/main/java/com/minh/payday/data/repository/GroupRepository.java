@@ -52,6 +52,13 @@ public class GroupRepository {
         return groupLiveData;
     }
 
+    public Task<Void> addUserToGroup(String groupId, String userId) {
+        DocumentReference groupRef = firestore.collection("groups").document(groupId);
+
+        // Atomically add a new user to the "members" array field
+        return groupRef.update("members", FieldValue.arrayUnion(userId));
+    }
+
     public Task<Void> createOrUpdateGroup(Group group) {
         if (group.getGroupId() == null) {
             // Create new group

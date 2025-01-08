@@ -14,13 +14,14 @@ public class Group implements Serializable {
     private List<String> members;
     private String description;
     private boolean isOnline; // Add a field to indicate if the group is online or not
+    private boolean isSynced; // Field to indicate if the group is synced with Firestore
 
     // Default constructor required for calls to DataSnapshot.getValue(Group.class)
     public Group() {
     }
 
     public Group(String groupId, String groupName, String iconUrl, String ownerId,
-                 List<String> members, String description, boolean isOnline) {
+                 List<String> members, String description, boolean isOnline, boolean isSynced) {
         this.groupId = groupId;
         this.groupName = groupName;
         this.iconUrl = iconUrl;
@@ -28,6 +29,7 @@ public class Group implements Serializable {
         this.members = members;
         this.description = description;
         this.isOnline = isOnline;
+        this.isSynced = isSynced;
     }
 
     // Getters
@@ -58,6 +60,9 @@ public class Group implements Serializable {
     // isOnline getter
     public boolean isOnline() {
         return isOnline;
+    }
+    public boolean isSynced() {
+        return isSynced;
     }
 
     // Setters
@@ -90,6 +95,11 @@ public class Group implements Serializable {
         isOnline = online;
     }
 
+    public void setSynced(boolean synced) {
+        isSynced = synced;
+    }
+
+
     // Optional: Convert to map for Firestore
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -100,6 +110,7 @@ public class Group implements Serializable {
         result.put("members", getMembers());
         result.put("description", description);
         result.put("isOnline", isOnline);
+        result.put("isSynced", isSynced);
         return result;
     }
 }

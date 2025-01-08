@@ -7,10 +7,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.minh.payday.data.models.Group;
-import com.minh.payday.ui.groups.GroupsAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +25,7 @@ public class GroupPagerAdapter extends FragmentPagerAdapter {
         notifyDataSetChanged();
     }
 
+    @NonNull
     @Override
     public Fragment getItem(int position) {
         Log.d("GroupPagerAdapter", "getItem called for position: " + position);
@@ -39,6 +38,7 @@ public class GroupPagerAdapter extends FragmentPagerAdapter {
             case 1: // Online Groups
                 Log.d("GroupPagerAdapter", "Online Groups tab selected");
                 for (Group group : groups) {
+                    Log.d("GroupPagerAdapter", "  Checking group: " + group.getGroupName() + ", isOnline: " + group.isOnline());
                     if (group.isOnline()) {
                         filteredGroups.add(group);
                     }
@@ -47,6 +47,7 @@ public class GroupPagerAdapter extends FragmentPagerAdapter {
             case 2: // Offline Groups
                 Log.d("GroupPagerAdapter", "Offline Groups tab selected");
                 for (Group group : groups) {
+                    Log.d("GroupPagerAdapter", "  Checking group: " + group.getGroupName() + ", isOnline: " + group.isOnline());
                     if (!group.isOnline()) {
                         filteredGroups.add(group);
                     }

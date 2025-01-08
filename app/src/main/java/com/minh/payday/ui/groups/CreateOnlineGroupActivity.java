@@ -8,11 +8,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Group;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class CreateOnlineGroupActivity extends AppCompatActivity {
 
@@ -44,19 +47,20 @@ public class CreateOnlineGroupActivity extends AppCompatActivity {
             return;
         }
 
-        // Get the current user ID from FirebaseAuth
-        String currentUserId = groupsViewModel.getCurrentUserId();
-        if (currentUserId == null) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
             Toast.makeText(this, "Error: User not signed in", Toast.LENGTH_SHORT).show();
             return;
         }
+        String currentUserId = currentUser.getUid();
 
-        // Create a new Group object
+        // Create a new Group object for an online group
         Group group = new Group();
+        group.setGroupId(UUID.randomUUID().toString()); // Generate a unique ID for the online group
         group.setGroupName(groupName);
         group.setDescription(groupDescription);
         group.setOwnerId(currentUserId);
-        group.setOnline(true);
+        group.setOnline(true); // Mark as online
 
         // Add the current user as the first member
         List<String> members = new ArrayList<>();
@@ -68,11 +72,9 @@ public class CreateOnlineGroupActivity extends AppCompatActivity {
 
         // Observe the status message LiveData for updates from the ViewModel
         groupsViewModel.getStatusMessage().observe(this, message -> {
-            if (message != null) {
+            if (message != null && message.contains("success")) {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-                if (message.contains("success")) {
-                    finish(); // Close the activity if group creation was successful
-                }
+                finish(); // Close the activity if group creation was successful
             }
         });
     }

@@ -14,8 +14,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.appbar.AppBarLayout;
@@ -24,7 +22,6 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Group;
-import com.minh.payday.ui.groups.GroupsAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +29,6 @@ import java.util.List;
 public class GroupsFragment extends Fragment {
 
     private GroupsViewModel groupsViewModel;
-    private RecyclerView groupsRecyclerView;
-    private GroupsAdapter groupsAdapter;
     private FloatingActionButton createGroupFab;
     private Button joinGroupButton;
     private TabLayout tabLayout;
@@ -61,7 +56,6 @@ public class GroupsFragment extends Fragment {
         setupViewPagerAndTabs();
 
         // Set up the RecyclerView and observe groups
-        setupRecyclerView();
         observeGroups();
 
         // Set up click listeners for buttons
@@ -76,25 +70,29 @@ public class GroupsFragment extends Fragment {
         tabLayout.setupWithViewPager(viewPager);
     }
 
-    private void setupRecyclerView() {
-        groupsAdapter = new GroupsAdapter(new ArrayList<>(), group -> {
-            Intent intent = new Intent(getActivity(), GroupDetailsActivity.class);
-            intent.putExtra("groupId", group.getGroupId());
-            startActivity(intent);
-        });
-        // Remove the RecyclerView setup
-    }
-
     private void observeGroups() {
         String currentUserId = getCurrentUserId();
         if (currentUserId != null) {
             groupsViewModel.fetchGroupsForUser(currentUserId);
+
+            // Observe changes in the LiveData
             groupsViewModel.getUserGroupsLiveData().observe(getViewLifecycleOwner(), groups -> {
                 if (groups != null) {
-                    Log.d("GroupsFragment", "Groups received: " + groups.size()); // Log received groups
+                    Log.d("GroupsFragment", "Groups received: " + groups.size());
+                    for (Group group : groups) {
+                        Log.d("GroupsFragment", "Group Name: " + group.getGroupName() +
+                                ", isOnline: " + group.isOnline() +
+                                ", isSynced: " + group.isSynced() +
+                                ", Owner ID: " + group.getOwnerId());
+                    }
+
+                    // Update the adapter and notify about the data change
                     groupPagerAdapter.setGroups(groups);
+                    groupPagerAdapter.notifyDataSetChanged();
                 }
             });
+
+            // Observe the status message LiveData for updates from the ViewModel
             groupsViewModel.getStatusMessage().observe(getViewLifecycleOwner(), message -> {
                 if (message != null) {
                     Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();

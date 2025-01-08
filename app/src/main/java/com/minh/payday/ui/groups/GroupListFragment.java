@@ -47,7 +47,10 @@ public class GroupListFragment extends Fragment {
         if (getArguments() != null) {
             ArrayList<Group> groups = (ArrayList<Group>) getArguments().getSerializable("groups");
             Log.d("GroupListFragment", "Received groups size: " + groups.size());
-            groupsAdapter.setGroups(groups);
+            if (groupsAdapter != null) {
+                groupsAdapter.setGroups(groups);
+                getActivity().runOnUiThread(() -> groupsAdapter.notifyDataSetChanged());
+            }
         }
     }
 

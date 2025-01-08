@@ -8,12 +8,15 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Group;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class CreateOfflineGroupActivity extends AppCompatActivity {
 
@@ -48,11 +51,20 @@ public class CreateOfflineGroupActivity extends AppCompatActivity {
             return;
         }
 
+        // Get the current user's ID
+        String currentUserId = groupsViewModel.getCurrentUserId();
+        if (currentUserId == null) {
+            Toast.makeText(this, "Error: User not signed in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Create a new Group object for offline group
         Group group = new Group();
         group.setGroupName(groupName);
         group.setDescription(groupDescription);
         group.setOnline(false);
+        group.setSynced(false);
+        group.setOwnerId(currentUserId); // Set the owner ID
 
         // Convert comma-separated member names to a list
         List<String> members = new ArrayList<>();
