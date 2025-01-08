@@ -29,17 +29,56 @@
     <string name="error_password_mismatch">Passwords do not match!</string>
     <string name="registration_success">Registration successful!</string>
     <string name="registration_failed">Registration failed: %1$s</string>
-
     <string name="main_welcome_user">Welcome, %1$s!</string>
     <string name="logout">Logout</string>
     <string name="main_welcome">Welcome Home</string>
-    <!-- Bottom Navbar    -->
+
+    <!-- Bottom Navbar -->
     <string name="nav_groups">Groups</string>
     <string name="nav_chat">Chat</string>
     <string name="nav_insight">Insight</string>
     <string name="nav_profile">Profile</string>
 
-    <!-- ABC    -->
+    <!-- Groups Fragment -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="create_or_join_group">Create or Join Group</string>
+    <string name="create_online_group">Create Online Group</string>
+    <string name="create_offline_group">Create Offline Group</string>
+    <string name="join_group">Join Group</string>
+    <string name="group_name">Group Name</string>
+    <string name="group_description_optional">Group Description (Optional)</string>
+    <string name="enter_group_code">Enter Group Code</string>
+    <string name="enter_member_names_comma_separated">Enter Member Names (comma-separated)</string>
+    <string name="add_expense">Add Expense</string>
+    <string name="create_group">Create Group</string>
+
+    <!-- Group Details Activity -->
+    <string name="members">Members</string>
+    <string name="expenses">Expenses</string>
+
+    <!-- Add Expense Activity (Placeholders) -->
+    <string name="expense_amount">Amount</string>
+    <string name="expense_description">Description</string>
+    <string name="expense_payer">Payer</string>
+    <string name="expense_participants">Participants</string>
+    <string name="expense_category">Category</string>
+    <string name="expense_date">Date</string>
+    <string name="save_expense">Save Expense</string>
+
+    <!-- Error Messages -->
+    <string name="error_creating_group">Error creating group</string>
+    <string name="error_joining_group">Error joining group</string>
+    <string name="error_fetching_groups">Error fetching groups</string>
+    <string name="error_loading_group_details">Error loading group details</string>
+    <string name="error_adding_expense">Error adding expense</string>
+    <string name="error_user_not_signed_in">Error: User not signed in</string>
+    <string name="error_group_not_found">Group not found</string>
+    <string name="error_adding_user_to_group">Error adding user to group</string>
+
+    <!-- Success Messages -->
+    <string name="group_created_successfully">Group created successfully!</string>
+    <string name="group_joined_successfully">Group joined successfully!</string>
+    <string name="expense_added_successfully">Expense added successfully!</string>
+    <string name="user_added_to_group_successfully">User added to group!</string>
 
 </resources>
