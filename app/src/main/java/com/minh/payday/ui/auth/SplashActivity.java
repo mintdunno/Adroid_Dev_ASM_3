@@ -2,6 +2,8 @@ package com.minh.payday.ui.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,15 +18,22 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash); // Optional splash layout
-
-        // Check if user is already logged in
-        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            // Already logged in, go to MainActivity
-            startActivity(new Intent(SplashActivity.this, MainActivity.class));
-        } else {
-            // Not logged in, go to LoginActivity
-            startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
         }
-        finish(); // Close SplashActivity
+        Button exploreButton = findViewById(R.id.buttonExplore);
+        exploreButton.setOnClickListener(new View.OnClickListener() {            // Check if user is already logged in
+            @Override
+            public void onClick(View v) {
+                if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                    // Navigate to MainActivity
+                    startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                } else {
+                    // Navigate to LoginActivity
+                    startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+                }
+                finish(); // Close SplashActivity
+            }
+        });
     }
 }

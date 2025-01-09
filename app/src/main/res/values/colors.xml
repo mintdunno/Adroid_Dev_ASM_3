@@ -8,6 +8,10 @@
     <color name="white">#FFFFFF</color>       <!-- Blue 300 (hover/focus) -->
     <color name="black">#000000</color>       <!-- Blue 300 (hover/focus) -->
 
+    <!-- Primary Greens -->
+    <color name="green_primary">#33AB25</color>
+    <color name="colorPrimaryDarkGreen">#228B22</color>   <!-- Green 700 -->
+    <color name="colorAccentGreen">#66C266</color>
     <!-- Light Theme Neutrals -->
     <color name="light_background">#FFFFFFFF</color>
     <color name="light_surface">#FFF5F5F5</color>
@@ -28,5 +32,7 @@
     <color name="quick_group_text_color">#FF9800</color>
     <color name="live_group_icon_color">#2196F3</color>
     <color name="quick_group_icon_color">#FF9800</color>
+    <color name="white">#FFFFFF</color>
+
 
 </resources>
