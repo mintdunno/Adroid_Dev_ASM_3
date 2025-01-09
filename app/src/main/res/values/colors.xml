@@ -6,6 +6,7 @@
     <color name="colorPrimaryDark">#1565C0</color>  <!-- Blue 700 -->
     <color name="colorAccent">#64B5F6</color>       <!-- Blue 300 (hover/focus) -->
     <color name="white">#FFFFFF</color>       <!-- Blue 300 (hover/focus) -->
+    <color name="black">#000000</color>       <!-- Blue 300 (hover/focus) -->
 
     <!-- Light Theme Neutrals -->
     <color name="light_background">#FFFFFFFF</color>

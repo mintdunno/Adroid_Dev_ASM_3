@@ -1,124 +1,66 @@
 package com.minh.payday.ui.groups;
 
-import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.fragment.app.Fragment;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
 import com.minh.payday.R;
-import com.minh.payday.data.models.Group;
-import com.minh.payday.ui.groups.GroupsAdapter;
 
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the {@link GroupsFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
 public class GroupsFragment extends Fragment {
 
-    private GroupsViewModel groupsViewModel;
-    private RecyclerView groupsRecyclerView;
-    private GroupsAdapter groupsAdapter;
-    private FloatingActionButton createGroupFab;
-    private Button joinGroupButton;
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
+
+    // TODO: Rename and change types of parameters
+    private String mParam1;
+    private String mParam2;
+
+    public GroupsFragment() {
+        // Required empty public constructor
+    }
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param param1 Parameter 1.
+     * @param param2 Parameter 2.
+     * @return A new instance of fragment GroupsFragment.
+     */
+    // TODO: Rename and change types and number of parameters
+    public static GroupsFragment newInstance(String param1, String param2) {
+        GroupsFragment fragment = new GroupsFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        groupsViewModel = new ViewModelProvider(this).get(GroupsViewModel.class);
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_groups, container, false);
-
-        groupsRecyclerView = view.findViewById(R.id.groupsRecyclerView);
-        createGroupFab = view.findViewById(R.id.createGroupFab);
-        joinGroupButton = view.findViewById(R.id.joinGroupButton);
-
-        setupRecyclerView();
-        observeGroups();
-        setupClickListeners();
-
-        return view;
-    }
-
-    private void setupRecyclerView() {
-        groupsAdapter = new GroupsAdapter(new ArrayList<>(), group -> {
-            // Navigate to GroupDetailsActivity when a group is clicked
-            Intent intent = new Intent(getActivity(), GroupDetailsActivity.class);
-            intent.putExtra("groupId", group.getGroupId());
-            startActivity(intent);
-        });
-        groupsRecyclerView.setAdapter(groupsAdapter);
-        groupsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-    }
-
-    private void observeGroups() {
-        String currentUserId = getCurrentUserId();
-        if (currentUserId != null) {
-            groupsViewModel.fetchGroupsForUser(currentUserId);
-            groupsViewModel.getUserGroupsLiveData().observe(getViewLifecycleOwner(), groups -> {
-                if (groups != null) {
-                    groupsAdapter.setGroups(groups);
-                }
-            });
-
-            // Observe the status message LiveData for updates from the ViewModel
-            groupsViewModel.getStatusMessage().observe(getViewLifecycleOwner(), message -> {
-                if (message != null) {
-                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-                }
-            });
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
-    private void setupClickListeners() {
-        createGroupFab.setOnClickListener(v -> showCreateGroupDialog());
-        joinGroupButton.setOnClickListener(v -> showJoinGroupDialog());
-    }
-
-    private void showCreateGroupDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.create_or_join_group)
-                .setItems(new String[]{
-                        getString(R.string.create_online_group),
-                        getString(R.string.create_offline_group),
-                        getString(R.string.join_group)}, (dialog, which) -> {
-                    switch (which) {
-                        case 0:
-                            startActivity(new Intent(getActivity(), CreateOnlineGroupActivity.class));
-                            break;
-                        case 1:
-                            startActivity(new Intent(getActivity(), CreateOfflineGroupActivity.class));
-                            break;
-                        case 2:
-                            showJoinGroupDialog();
-                            break;
-                    }
-                });
-        builder.create().show();
-    }
-
-    private void showJoinGroupDialog() {
-        // Implement a dialog to input group code and join
-    }
-
-    private String getCurrentUserId() {
-        // Assuming you are using Firebase Authentication
-        return FirebaseAuth.getInstance().getCurrentUser() != null
-                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
-                : null;
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_groups, container, false);
     }
 }
