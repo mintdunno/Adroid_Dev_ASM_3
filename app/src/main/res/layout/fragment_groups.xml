@@ -12,22 +12,15 @@
         android:background="@color/white"
         app:elevation="0dp">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
+        <TextView
+            android:id="@+id/paydayTitleTextView"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/white">
-
-            <TextView
-                android:id="@+id/paydayTitleTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/app_name"
-                android:textColor="@color/colorPrimary"
-                android:textSize="24sp"
-                android:textStyle="bold" />
-        </androidx.appcompat.widget.Toolbar>
+            android:gravity="center"
+            android:text="@string/app_name"
+            android:textColor="@color/colorPrimary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
@@ -39,36 +32,40 @@
             app:tabMode="fixed"
             app:tabSelectedTextColor="@color/colorPrimary"
             app:tabTextColor="@color/black" />
-
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.viewpager.widget.ViewPager
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/createGroupFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="16dp"
+        android:text="Create Group"
+        android:textColor="@color/white"
+        app:backgroundTint="@color/colorPrimary"
+        app:icon="@drawable/ic_add"
+        app:iconTint="@color/white"
+        app:layout_anchor="@id/viewPager"
+        app:layout_anchorGravity="bottom|start" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/joinGroupFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:src="@drawable/ic_add"
-        app:backgroundTint="@color/colorPrimary"
-        app:layout_anchor="@id/viewPager"
-        app:layout_anchorGravity="bottom|right|end"
-        app:tint="@color/white" />
-
-    <Button
-        android:id="@+id/joinGroupButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="88dp"
-        android:text="@string/join_group"
+        android:text="Join Group"
         android:textColor="@color/white"
         app:backgroundTint="@color/colorPrimary"
+        app:icon="@drawable/ic_add"
+        app:iconTint="@color/white"
         app:layout_anchor="@id/viewPager"
-        app:layout_anchorGravity="bottom|center_horizontal" />
+        app:layout_anchorGravity="bottom|end" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

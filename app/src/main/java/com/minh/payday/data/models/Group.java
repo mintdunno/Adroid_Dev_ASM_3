@@ -1,39 +1,40 @@
 package com.minh.payday.data.models;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Represents a Group of users who share expenses.
- * Can have an optional iconUrl for a group icon/avatar.
- */
 public class Group implements Serializable {
+    public enum GroupType {
+        LIVE, QUICK
+    }
 
     private String groupId;
     private String groupName;
-    private String iconUrl;        // optional group icon
-    private String ownerId;        // userId of the group owner (creator)
-    private List<String> members;  // user IDs
-    private String description;    // optional group description
+    private String iconUrl;
+    private String ownerId;
+    private List<String> members;
+    private String description;
+    private GroupType groupType;
+    private String roomCode; // Only for Live Groups
 
+    // Required empty constructor for Firestore
     public Group() {
-        // Required empty constructor
     }
 
     public Group(String groupId, String groupName, String iconUrl, String ownerId,
-                 List<String> members, String description) {
+                 List<String> members, String description, GroupType groupType, String roomCode) {
         this.groupId = groupId;
         this.groupName = groupName;
         this.iconUrl = iconUrl;
         this.ownerId = ownerId;
         this.members = members;
         this.description = description;
+        this.groupType = groupType;
+        this.roomCode = roomCode;
     }
 
-    // Getters & Setters
     public String getGroupId() {
         return groupId;
     }
@@ -67,9 +68,6 @@ public class Group implements Serializable {
     }
 
     public List<String> getMembers() {
-        if (members == null) {
-            members = new ArrayList<>();
-        }
         return members;
     }
 
@@ -85,6 +83,22 @@ public class Group implements Serializable {
         this.description = description;
     }
 
+    public GroupType getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(GroupType groupType) {
+        this.groupType = groupType;
+    }
+
+    public String getRoomCode() {
+        return roomCode;
+    }
+
+    public void setRoomCode(String roomCode) {
+        this.roomCode = roomCode;
+    }
+
     // Optional: Convert to map for Firestore
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
@@ -94,6 +108,8 @@ public class Group implements Serializable {
         map.put("ownerId", ownerId);
         map.put("members", members);
         map.put("description", description);
+        map.put("groupType", groupType);
+        map.put("roomCode", roomCode);
         return map;
     }
 }
