@@ -24,4 +24,9 @@
     <color name="light_grey_divider">#FFE0E0E0</color>
     <color name="nav_item_ripple">#1F2196F3</color>
 
+    <color name="live_group_text_color">#2196F3</color>
+    <color name="quick_group_text_color">#FF9800</color>
+    <color name="live_group_icon_color">#2196F3</color>
+    <color name="quick_group_icon_color">#FF9800</color>
+
 </resources>

@@ -13,14 +13,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.minh.payday.R;
-import com.minh.payday.ui.groups.adapters.QuickGroupsAdapter;
+import com.minh.payday.ui.groups.adapters.LiveGroupsAdapter;
 
 import java.util.ArrayList;
 
 public class QuickGroupsFragment extends Fragment {
 
     private RecyclerView quickGroupsRecyclerView;
-    private QuickGroupsAdapter adapter;
+    private LiveGroupsAdapter adapter;
     private QuickGroupsViewModel viewModel;
 
     @Override
@@ -41,7 +41,7 @@ public class QuickGroupsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         quickGroupsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new QuickGroupsAdapter(new ArrayList<>());
+        adapter = new LiveGroupsAdapter(new ArrayList<>());
         quickGroupsRecyclerView.setAdapter(adapter);
 
         viewModel.getQuickGroups().observe(getViewLifecycleOwner(), groups -> {

@@ -2,30 +2,22 @@ package com.minh.payday.data.repository;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.SetOptions;
 import com.minh.payday.data.models.Group;
-import com.minh.payday.data.models.User;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class GroupRepository {
     private final FirebaseFirestore firestore;
@@ -95,21 +87,29 @@ public class GroupRepository {
             group.setRoomCode(generateRoomCode());
         }
 
-        // Add the current user as a member and owner
         String currentUserId = Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
         List<String> members = new ArrayList<>();
         members.add(currentUserId);
-        group.setMembers(members);
+
+        // Set ownerId to the current user's ID
         group.setOwnerId(currentUserId);
 
-        return firestore.collection("groups").add(group.toMap())
+        // Use a map to correctly handle merging with existing document
+        Map<String, Object> groupMap = group.toMap();
+        groupMap.put("members", members);
+
+        // Use add() to create a new document, which will automatically generate a unique ID
+        return firestore.collection("groups").add(groupMap)
                 .continueWithTask(task -> {
                     if (!task.isSuccessful()) {
                         throw Objects.requireNonNull(task.getException());
                     }
+                    // Get the auto-generated ID and update the document
                     String generatedId = Objects.requireNonNull(task.getResult()).getId();
                     group.setGroupId(generatedId);
-                    return firestore.collection("groups").document(generatedId).set(group.toMap(), SetOptions.merge());
+                    groupMap.put("groupId", generatedId); // Update the map with the new ID
+                    // Use set() with merge option to update the document with the generated ID
+                    return firestore.collection("groups").document(generatedId).set(groupMap, SetOptions.merge());
                 });
     }
 

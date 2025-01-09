@@ -13,7 +13,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Group;
 import com.minh.payday.ui.groups.adapters.LiveGroupsAdapter;
@@ -39,6 +38,7 @@ public class LiveGroupsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_live_groups, container, false);
         liveGroupsRecyclerView = view.findViewById(R.id.liveGroupsRecyclerView);
+        liveGroupsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         return view;
     }
 
