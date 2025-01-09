@@ -12,6 +12,7 @@ import com.minh.payday.data.models.Group;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GroupPagerAdapter extends FragmentPagerAdapter {
     private List<Group> groups = new ArrayList<>();
@@ -30,30 +31,31 @@ public class GroupPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         Log.d("GroupPagerAdapter", "getItem called for position: " + position);
         List<Group> filteredGroups = new ArrayList<>();
+
+        // Filter groups based on the selected tab
         switch (position) {
             case 0: // All Groups
                 Log.d("GroupPagerAdapter", "All Groups tab selected");
-                filteredGroups.addAll(groups);
+                filteredGroups = new ArrayList<>(groups); // Create a new list containing all groups
                 break;
             case 1: // Online Groups
                 Log.d("GroupPagerAdapter", "Online Groups tab selected");
-                for (Group group : groups) {
-                    Log.d("GroupPagerAdapter", "  Checking group: " + group.getGroupName() + ", isOnline: " + group.isOnline());
-                    if (group.isOnline()) {
-                        filteredGroups.add(group);
-                    }
-                }
+                filteredGroups = new ArrayList<>(groups.stream()
+                        .filter(Group::isOnline)
+                        .collect(Collectors.toList()));
                 break;
             case 2: // Offline Groups
                 Log.d("GroupPagerAdapter", "Offline Groups tab selected");
-                for (Group group : groups) {
-                    Log.d("GroupPagerAdapter", "  Checking group: " + group.getGroupName() + ", isOnline: " + group.isOnline());
-                    if (!group.isOnline()) {
-                        filteredGroups.add(group);
-                    }
-                }
+                filteredGroups = new ArrayList<>(groups.stream()
+                        .filter(group -> !group.isOnline())
+                        .collect(Collectors.toList()));
+                break;
+            default:
+                Log.d("GroupPagerAdapter", "Default case triggered");
+                filteredGroups = new ArrayList<>(groups); // Default to all groups
                 break;
         }
+
         Log.d("GroupPagerAdapter", "Filtered groups size: " + filteredGroups.size());
         return GroupListFragment.newInstance(filteredGroups);
     }

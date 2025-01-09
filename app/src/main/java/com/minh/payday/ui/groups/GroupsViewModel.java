@@ -80,7 +80,6 @@ public class GroupsViewModel extends AndroidViewModel {
         });
     }
 
-
     public void fetchGroupsForUser(String userId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         // Fetch online groups
@@ -95,12 +94,12 @@ public class GroupsViewModel extends AndroidViewModel {
                             if (group != null) {
                                 group.setGroupId(document.getId());
                                 group.setOnline(true);
-                                group.setSynced(true); // Online groups are always synced
+                                group.setSynced(true);
                                 onlineGroups.add(group);
                             }
                         }
 
-                        // Fetch offline groups using the improved method
+                        // Fetch offline groups
                         List<Group> offlineGroups = getOfflineGroups(userId);
 
                         // Combine online and offline groups
@@ -109,8 +108,6 @@ public class GroupsViewModel extends AndroidViewModel {
                         allGroups.addAll(offlineGroups);
 
                         userGroupsLiveData.setValue(allGroups); // Update LiveData
-
-                        // Log fetched groups
                         Log.d("GroupsViewModel", "Fetching groups for user: " + userId);
                         Log.d("GroupsViewModel", "Offline groups fetched: " + offlineGroups.size());
                         Log.d("GroupsViewModel", "Online groups fetched: " + onlineGroups.size());
@@ -127,32 +124,25 @@ public class GroupsViewModel extends AndroidViewModel {
             return new ArrayList<>();
         }
 
-        if (application == null) {
-            Log.e("GroupsViewModel", "Application context is null in getOfflineGroups");
-            return new ArrayList<>();
-        }
-
         SharedPreferences prefs = application.getSharedPreferences("OfflineGroups", Context.MODE_PRIVATE);
         String offlineGroupsJson = prefs.getString(userId, null);
+        if (offlineGroupsJson != null) {
+            Gson gson = new Gson();
+            Type type = new TypeToken<List<Group>>() {}.getType();
+            List<Group> groups = gson.fromJson(offlineGroupsJson, type);
 
-        if (offlineGroupsJson == null) {
-            Log.d("GroupsViewModel", "No offline groups found for user: " + userId);
-            return new ArrayList<>(); // Return empty list directly
-        }
-
-        Gson gson = new Gson();
-        Type type = new TypeToken<List<Group>>() {}.getType();
-        try {
-            List<Group> offlineGroups = gson.fromJson(offlineGroupsJson, type);
-            Log.d("GroupsViewModel", "Offline groups fetched: " + offlineGroups.size());
-            for (Group group: offlineGroups){
-                Log.d("GroupsViewModel", "Offline group: " + group.getGroupName() + ", isOnline: " + group.isOnline() + ", isSynced: " + group.isSynced() + ", ownerId: " + group.getOwnerId());
+            // Log each group's details
+            for (Group group : groups) {
+                Log.d("GroupsViewModel", "Offline Group: " + group.getGroupName() +
+                        ", isOnline: " + group.isOnline() +
+                        ", isSynced: " + group.isSynced() +
+                        ", Owner ID: " + group.getOwnerId() +
+                        ", Group ID: " + group.getGroupId());
             }
-            return offlineGroups;
-        } catch (Exception e) {
-            Log.e("GroupsViewModel", "Error deserializing offline groups: " + e.getMessage());
-            return new ArrayList<>(); // Return empty list on error
+
+            return groups;
         }
+        return new ArrayList<>();
     }
 
     // Method to create an offline group
@@ -191,16 +181,44 @@ public class GroupsViewModel extends AndroidViewModel {
     }
     private void trySyncOfflineGroup(Group group) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        group.setOnline(true);
         db.collection("groups").document(group.getGroupId())
                 .set(group.toMap())
                 .addOnSuccessListener(aVoid -> {
                     // Update local isSynced status to true
+                    group.setSynced(true);
+                    group.setOnline(true);
+                    updateOfflineGroup(group);
                     updateOfflineGroupSyncedStatus(group.getGroupId(), true);
                 })
                 .addOnFailureListener(e -> {
                     Log.e("GroupsViewModel", "Error syncing offline group: " + e.getMessage());
                     // Keep isSynced as false locally, it will be retried in fetchGroupsForUser
                 });
+    }
+    private void updateOfflineGroup(Group updatedGroup) {
+        String currentUserId = getCurrentUserId();
+        if (currentUserId == null) return;
+
+        SharedPreferences prefs = application.getSharedPreferences("OfflineGroups", Context.MODE_PRIVATE);
+        String offlineGroupsJson = prefs.getString(currentUserId, null);
+        if (offlineGroupsJson != null) {
+            Gson gson = new Gson();
+            Type type = new TypeToken<List<Group>>() {}.getType();
+            List<Group> offlineGroups = gson.fromJson(offlineGroupsJson, type);
+
+            // Find the group to update based on its ID
+            for (int i = 0; i < offlineGroups.size(); i++) {
+                if (offlineGroups.get(i).getGroupId().equals(updatedGroup.getGroupId())) {
+                    offlineGroups.set(i, updatedGroup); // Replace the old group with the updated one
+                    break;
+                }
+            }
+
+            // Save the updated list back to SharedPreferences
+            String updatedOfflineGroupsJson = gson.toJson(offlineGroups);
+            prefs.edit().putString(currentUserId, updatedOfflineGroupsJson).apply();
+        }
     }
 
     private void updateOfflineGroupSyncedStatus(String groupId, boolean isSynced) {
