@@ -62,8 +62,7 @@ public class CreateOfflineGroupActivity extends AppCompatActivity {
         Group group = new Group();
         group.setGroupName(groupName);
         group.setDescription(groupDescription);
-        group.setOnline(false);
-        group.setSynced(false);
+        group.setTemp(true); // set isTemp to true for temp group
         group.setOwnerId(currentUserId); // Set the owner ID
 
         // Convert comma-separated member names to a list

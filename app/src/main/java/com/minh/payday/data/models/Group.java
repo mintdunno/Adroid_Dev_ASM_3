@@ -11,25 +11,23 @@ public class Group implements Serializable {
     private String groupName;
     private String iconUrl;
     private String ownerId;
-    private List<String> members;
+    private List<String> members; // member is user id
     private String description;
-    private boolean isOnline; // Add a field to indicate if the group is online or not
-    private boolean isSynced; // Field to indicate if the group is synced with Firestore
+    private boolean isTemp; // Field to indicate if it's a "Temp Group" (false = online group, true = temp group)
 
     // Default constructor required for calls to DataSnapshot.getValue(Group.class)
     public Group() {
     }
 
     public Group(String groupId, String groupName, String iconUrl, String ownerId,
-                 List<String> members, String description, boolean isOnline, boolean isSynced) {
+                 List<String> members, String description, boolean isTemp) {
         this.groupId = groupId;
         this.groupName = groupName;
         this.iconUrl = iconUrl;
         this.ownerId = ownerId;
         this.members = members;
         this.description = description;
-        this.isOnline = isOnline;
-        this.isSynced = isSynced;
+        this.isTemp = isTemp;
     }
 
     // Getters
@@ -56,13 +54,8 @@ public class Group implements Serializable {
     public String getDescription() {
         return description;
     }
-
-    // isOnline getter
-    public boolean isOnline() {
-        return isOnline;
-    }
-    public boolean isSynced() {
-        return isSynced;
+    public boolean isTemp() {
+        return isTemp;
     }
 
     // Setters
@@ -89,18 +82,11 @@ public class Group implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-
-    // isOnline setter
-    public void setOnline(boolean online) {
-        isOnline = online;
+    public void setTemp(boolean temp) {
+        isTemp = temp;
     }
 
-    public void setSynced(boolean synced) {
-        isSynced = synced;
-    }
-
-
-    // Optional: Convert to map for Firestore
+    // Convert to map for Firestore
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
         result.put("groupId", groupId);
@@ -109,8 +95,7 @@ public class Group implements Serializable {
         result.put("ownerId", ownerId);
         result.put("members", getMembers());
         result.put("description", description);
-        result.put("isOnline", isOnline);
-        result.put("isSynced", isSynced);
+        result.put("isTemp", isTemp);
         return result;
     }
 }

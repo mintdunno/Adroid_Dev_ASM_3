@@ -70,7 +70,6 @@ public class GroupRepository {
                         // Set the generated ID to the group
                         String generatedId = task.getResult().getId();
                         group.setGroupId(generatedId);
-                        group.setOnline(true);
                         // Update the document with the ID
                         return firestore.collection("groups").document(generatedId).set(group.toMap(), SetOptions.merge());
                     });

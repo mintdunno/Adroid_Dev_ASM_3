@@ -49,7 +49,6 @@ public class GroupListFragment extends Fragment {
             Log.d("GroupListFragment", "Received groups size: " + groups.size());
             if (groupsAdapter != null) {
                 groupsAdapter.setGroups(groups);
-                getActivity().runOnUiThread(() -> groupsAdapter.notifyDataSetChanged());
             }
         }
     }

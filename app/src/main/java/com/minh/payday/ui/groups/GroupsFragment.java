@@ -55,7 +55,7 @@ public class GroupsFragment extends Fragment {
         // Set up the ViewPager and TabLayout
         setupViewPagerAndTabs();
 
-        // Set up the RecyclerView and observe groups
+        // Observe groups
         observeGroups();
 
         // Set up click listeners for buttons
@@ -81,12 +81,10 @@ public class GroupsFragment extends Fragment {
                     Log.d("GroupsFragment", "Groups received: " + groups.size());
                     for (Group group : groups) {
                         Log.d("GroupsFragment", "Group Name: " + group.getGroupName() +
-                                ", isOnline: " + group.isOnline() +
-                                ", isSynced: " + group.isSynced() +
-                                ", Owner ID: " + group.getOwnerId());
+                                ", isTemp: " + group.isTemp() +
+                                ", Owner ID: " + group.getOwnerId() +
+                                ", Group ID: " + group.getGroupId());
                     }
-
-                    // Update the adapter and notify about the data change
                     groupPagerAdapter.setGroups(groups);
                     groupPagerAdapter.notifyDataSetChanged();
                 }

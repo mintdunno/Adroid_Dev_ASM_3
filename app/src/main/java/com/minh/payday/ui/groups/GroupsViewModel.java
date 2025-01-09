@@ -50,6 +50,7 @@ public class GroupsViewModel extends AndroidViewModel {
     public LiveData<List<Group>> getUserGroupsLiveData() {
         return userGroupsLiveData;
     }
+
     public LiveData<Group> getGroupById(String groupId) {
         if (groupByIdLiveData == null) {
             groupByIdLiveData = groupRepository.getGroupById(groupId);
@@ -82,173 +83,92 @@ public class GroupsViewModel extends AndroidViewModel {
 
     public void fetchGroupsForUser(String userId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        // Fetch online groups
+
+        // Fetch all groups where the user is a member
         db.collection("groups")
                 .whereArrayContains("members", userId)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        List<Group> onlineGroups = new ArrayList<>();
+                        List<Group> memberGroups = new ArrayList<>();
                         for (DocumentSnapshot document : task.getResult()) {
                             Group group = document.toObject(Group.class);
                             if (group != null) {
                                 group.setGroupId(document.getId());
-                                group.setOnline(true);
-                                group.setSynced(true);
-                                onlineGroups.add(group);
+                                memberGroups.add(group);
                             }
                         }
 
-                        // Fetch offline groups
-                        List<Group> offlineGroups = getOfflineGroups(userId);
+                        // Fetch groups where the user is the owner
+                        db.collection("groups")
+                                .whereEqualTo("ownerId", userId)
+                                .get()
+                                .addOnCompleteListener(ownerTask -> {
+                                    if (ownerTask.isSuccessful()) {
+                                        List<Group> ownedGroups = new ArrayList<>();
+                                        for (DocumentSnapshot document : ownerTask.getResult()) {
+                                            Group group = document.toObject(Group.class);
+                                            if (group != null && !containsGroup(memberGroups, group.getGroupId())) {
+                                                group.setGroupId(document.getId());
+                                                ownedGroups.add(group);
+                                            }
+                                        }
 
-                        // Combine online and offline groups
-                        List<Group> allGroups = new ArrayList<>();
-                        allGroups.addAll(onlineGroups);
-                        allGroups.addAll(offlineGroups);
+                                        // Combine both lists
+                                        List<Group> allGroups = new ArrayList<>();
+                                        allGroups.addAll(memberGroups);
+                                        allGroups.addAll(ownedGroups);
 
-                        userGroupsLiveData.setValue(allGroups); // Update LiveData
-                        Log.d("GroupsViewModel", "Fetching groups for user: " + userId);
-                        Log.d("GroupsViewModel", "Offline groups fetched: " + offlineGroups.size());
-                        Log.d("GroupsViewModel", "Online groups fetched: " + onlineGroups.size());
-                        Log.d("GroupsViewModel", "Total groups fetched (online + offline): " + allGroups.size());
+                                        userGroupsLiveData.setValue(allGroups);
+                                        Log.d("GroupsViewModel", "Fetching groups for user: " + userId);
+                                        Log.d("GroupsViewModel", "Total groups fetched: " + allGroups.size());
+                                    } else {
+                                        Log.d("GroupsViewModel", "Error getting documents: ", ownerTask.getException());
+                                        statusMessage.setValue("Error fetching groups: " + ownerTask.getException().getMessage());
+                                    }
+                                });
                     } else {
                         Log.d("GroupsViewModel", "Error getting documents: ", task.getException());
                         statusMessage.setValue("Error fetching groups: " + task.getException().getMessage());
                     }
                 });
     }
-    private List<Group> getOfflineGroups(String userId) {
-        if (userId == null) {
-            Log.e("GroupsViewModel", "Current user ID is null");
-            return new ArrayList<>();
-        }
 
-        SharedPreferences prefs = application.getSharedPreferences("OfflineGroups", Context.MODE_PRIVATE);
-        String offlineGroupsJson = prefs.getString(userId, null);
-        if (offlineGroupsJson != null) {
-            Gson gson = new Gson();
-            Type type = new TypeToken<List<Group>>() {}.getType();
-            List<Group> groups = gson.fromJson(offlineGroupsJson, type);
-
-            // Log each group's details
-            for (Group group : groups) {
-                Log.d("GroupsViewModel", "Offline Group: " + group.getGroupName() +
-                        ", isOnline: " + group.isOnline() +
-                        ", isSynced: " + group.isSynced() +
-                        ", Owner ID: " + group.getOwnerId() +
-                        ", Group ID: " + group.getGroupId());
+    // Helper method to check if a group is already in the list
+    private boolean containsGroup(List<Group> groups, String groupId) {
+        for (Group group : groups) {
+            if (group.getGroupId().equals(groupId)) {
+                return true;
             }
-
-            return groups;
         }
-        return new ArrayList<>();
+        return false;
     }
 
-    // Method to create an offline group
     public void createOfflineGroup(Group group) {
         String currentUserId = getCurrentUserId();
         if (currentUserId != null) {
             group.setGroupId(UUID.randomUUID().toString());
-            group.setOnline(false);
-            group.setSynced(false);
-            saveOfflineGroup(currentUserId, group);
-            // Immediately attempt to sync with Firestore
-            trySyncOfflineGroup(group);
-            fetchGroupsForUser(currentUserId);
+            group.setTemp(true);
+            group.setOwnerId(currentUserId);
+            saveGroupToFirestore(group);
         } else {
             statusMessage.setValue("User not signed in.");
         }
     }
-    private void saveOfflineGroup(String userId, Group group) {
-        SharedPreferences prefs = application.getSharedPreferences("OfflineGroups", Context.MODE_PRIVATE);
-        String offlineGroupsJson = prefs.getString(userId, null);
-        List<Group> offlineGroups;
 
-        Gson gson = new Gson();
-        if (offlineGroupsJson == null) {
-            offlineGroups = new ArrayList<>();
-        } else {
-            java.lang.reflect.Type type = new com.google.gson.reflect.TypeToken<List<Group>>() {}.getType();
-            offlineGroups = gson.fromJson(offlineGroupsJson, type);
-        }
-
-        offlineGroups.add(group);
-        String updatedOfflineGroupsJson = gson.toJson(offlineGroups);
-
-        prefs.edit().putString(userId, updatedOfflineGroupsJson).apply();
-        statusMessage.setValue("Offline group created successfully!");
-    }
-    private void trySyncOfflineGroup(Group group) {
+    // Saves the group to Firestore
+    private void saveGroupToFirestore(Group group) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        group.setOnline(true);
         db.collection("groups").document(group.getGroupId())
                 .set(group.toMap())
                 .addOnSuccessListener(aVoid -> {
-                    // Update local isSynced status to true
-                    group.setSynced(true);
-                    group.setOnline(true);
-                    updateOfflineGroup(group);
-                    updateOfflineGroupSyncedStatus(group.getGroupId(), true);
+                    statusMessage.setValue("Group created successfully!");
+                    fetchGroupsForUser(getCurrentUserId()); // Refresh the list after saving
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("GroupsViewModel", "Error syncing offline group: " + e.getMessage());
-                    // Keep isSynced as false locally, it will be retried in fetchGroupsForUser
+                    Log.e("GroupsViewModel", "Error saving group: " + e.getMessage());
+                    statusMessage.setValue("Error saving group: " + e.getMessage());
                 });
-    }
-    private void updateOfflineGroup(Group updatedGroup) {
-        String currentUserId = getCurrentUserId();
-        if (currentUserId == null) return;
-
-        SharedPreferences prefs = application.getSharedPreferences("OfflineGroups", Context.MODE_PRIVATE);
-        String offlineGroupsJson = prefs.getString(currentUserId, null);
-        if (offlineGroupsJson != null) {
-            Gson gson = new Gson();
-            Type type = new TypeToken<List<Group>>() {}.getType();
-            List<Group> offlineGroups = gson.fromJson(offlineGroupsJson, type);
-
-            // Find the group to update based on its ID
-            for (int i = 0; i < offlineGroups.size(); i++) {
-                if (offlineGroups.get(i).getGroupId().equals(updatedGroup.getGroupId())) {
-                    offlineGroups.set(i, updatedGroup); // Replace the old group with the updated one
-                    break;
-                }
-            }
-
-            // Save the updated list back to SharedPreferences
-            String updatedOfflineGroupsJson = gson.toJson(offlineGroups);
-            prefs.edit().putString(currentUserId, updatedOfflineGroupsJson).apply();
-        }
-    }
-
-    private void updateOfflineGroupSyncedStatus(String groupId, boolean isSynced) {
-        String currentUserId = getCurrentUserId();
-        if (currentUserId == null) return;
-
-        SharedPreferences prefs = application.getSharedPreferences("OfflineGroups", Context.MODE_PRIVATE);
-        String offlineGroupsJson = prefs.getString(currentUserId, null);
-        if (offlineGroupsJson != null) {
-            Gson gson = new Gson();
-            Type type = new TypeToken<List<Group>>() {}.getType();
-            List<Group> offlineGroups = gson.fromJson(offlineGroupsJson, type);
-
-            for (Group group : offlineGroups) {
-                if (group.getGroupId().equals(groupId)) {
-                    group.setSynced(isSynced);
-                    break;
-                }
-            }
-
-            String updatedOfflineGroupsJson = gson.toJson(offlineGroups);
-            prefs.edit().putString(currentUserId, updatedOfflineGroupsJson).apply();
-        }
-    }
-    private void syncOfflineGroups(List<Group> offlineGroups) {
-        for (Group group : offlineGroups) {
-            if (!group.isSynced()) {
-                trySyncOfflineGroup(group);
-            }
-        }
     }
 
     public String getCurrentUserId() {
@@ -259,8 +179,12 @@ public class GroupsViewModel extends AndroidViewModel {
     }
 
     public void createOrUpdateGroup(Group group) {
+        // Always set isTemp to false for online groups
+        group.setTemp(false);
+
         if (group.getGroupId() == null || group.getGroupId().isEmpty()) {
-            // Create a new group
+            // Create a new group with a new UUID
+            group.setGroupId(UUID.randomUUID().toString());
             createNewGroup(group);
         } else {
             // Update an existing group
