@@ -1,5 +1,7 @@
 package com.minh.payday.ui.groups.adapters;
 
+import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Group;
+import com.minh.payday.ui.groups.LiveGroupDetailsActivity;
 
 import java.util.List;
 
@@ -67,6 +70,25 @@ public class LiveGroupsAdapter extends RecyclerView.Adapter<LiveGroupsAdapter.Gr
         } else {
             holder.groupIconImageView.setImageResource(R.drawable.ic_group_placeholder);
         }
+
+        holder.itemView.setOnClickListener(view -> {
+            int currentPosition = holder.getAdapterPosition();
+            if (currentPosition != RecyclerView.NO_POSITION) {
+                Group currentGroup = groups.get(currentPosition);
+
+                // Determine the type of the group
+                if (currentGroup.getGroupType() == Group.GroupType.LIVE) {
+                    // Launch LiveGroupDetailsActivity for LIVE groups
+                    Intent intent = new Intent(holder.itemView.getContext(), LiveGroupDetailsActivity.class);
+                    intent.putExtra("groupId", currentGroup.getGroupId());
+                    holder.itemView.getContext().startActivity(intent);
+                } else {
+                    // Optionally handle QUICK groups differently, or do nothing
+                    // For example, you might show a Toast message or log an error
+                    Log.d("LiveGroupsAdapter", "Quick group clicked, no action specified");
+                }
+            }
+        });
     }
 
     @Override

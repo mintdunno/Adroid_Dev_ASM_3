@@ -2,10 +2,10 @@
 <resources>
 
     <!-- Primary Blues -->
-    <color name="colorPrimary">#2196F3</color>      <!-- Blue 500 -->
-    <color name="colorPrimaryDark">#1565C0</color>  <!-- Blue 700 -->
-    <color name="colorAccent">#64B5F6</color>       <!-- Blue 300 (hover/focus) -->
-    <color name="black">#000000</color>       <!-- Blue 300 (hover/focus) -->
+    <color name="colorPrimary">#33AB25</color>
+    <color name="colorPrimaryDark">#228B22</color>
+    <color name="colorAccent">#66C266</color>
+    <color name="black">#000000</color>
 
     <!-- Primary Greens -->
     <color name="green_primary">#33AB25</color>
@@ -27,10 +27,10 @@
     <color name="light_grey_divider">#FFE0E0E0</color>
     <color name="nav_item_ripple">#1F2196F3</color>
 
-    <color name="live_group_text_color">#2196F3</color>
-    <color name="quick_group_text_color">#FF9800</color>
-    <color name="live_group_icon_color">#2196F3</color>
-    <color name="quick_group_icon_color">#FF9800</color>
+    <color name="live_group_text_color">#FFFFFFFF</color>
+    <color name="quick_group_text_color">#FF121212</color>
+    <color name="live_group_icon_color">#FFFFFFFF</color>
+    <color name="quick_group_icon_color">#FF121212</color>
     <color name="white">#FFFFFF</color>
 
 

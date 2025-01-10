@@ -5,6 +5,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +27,8 @@ public class LiveGroupsFragment extends Fragment {
     private RecyclerView liveGroupsRecyclerView;
     private LiveGroupsAdapter adapter;
     private LiveGroupsViewModel viewModel;
+    private ProgressBar loadingIndicator;
+    private TextView errorMessageTextView;
     private static final String TAG = "LiveGroupsFragment";
 
     @Override
@@ -38,7 +42,8 @@ public class LiveGroupsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_live_groups, container, false);
         liveGroupsRecyclerView = view.findViewById(R.id.liveGroupsRecyclerView);
-        liveGroupsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        loadingIndicator = view.findViewById(R.id.loadingIndicator);
+        errorMessageTextView = view.findViewById(R.id.errorMessageTextView);
         return view;
     }
 
@@ -54,11 +59,23 @@ public class LiveGroupsFragment extends Fragment {
     }
 
     private void updateUI(List<Group> groups) {
+        // First, hide both the RecyclerView and the error message
+        liveGroupsRecyclerView.setVisibility(View.GONE);
+        errorMessageTextView.setVisibility(View.GONE);
+
         if (groups == null) {
-            Log.e(TAG, "Error fetching live groups or no data available.");
-            // Optionally update UI to show an error message or empty state
-            return;
+            // If the groups list is null, show the error message
+            Log.e(TAG, "Error fetching live groups.");
+            errorMessageTextView.setVisibility(View.VISIBLE);
+            errorMessageTextView.setText("Failed to load groups.");
+        } else if (groups.isEmpty()) {
+            // If the groups list is empty, show a message indicating no groups
+            errorMessageTextView.setVisibility(View.VISIBLE);
+            errorMessageTextView.setText("No live groups available.");
+        } else {
+            // If the groups list is not empty, show the RecyclerView and update the adapter
+            liveGroupsRecyclerView.setVisibility(View.VISIBLE);
+            adapter.updateGroups(groups);
         }
-        adapter.updateGroups(groups);
     }
 }

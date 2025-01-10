@@ -45,21 +45,10 @@
 
         <!-- Add declarations for your new activities here -->
         <activity
-            android:name=".ui.groups.CreateOnlineGroupActivity"
+            android:name=".ui.groups.LiveGroupDetailsActivity"
             android:exported="false" />
-        <activity
-            android:name=".ui.groups.CreateOfflineGroupActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.groups.JoinGroupActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.groups.GroupDetailsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.groups.AddExpenseActivity"
-            android:exported="false"/>
 
     </application>
+
 
 </manifest>
