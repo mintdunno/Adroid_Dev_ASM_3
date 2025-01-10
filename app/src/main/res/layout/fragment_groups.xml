@@ -18,7 +18,7 @@
             android:layout_height="?attr/actionBarSize"
             android:gravity="center"
             android:text="@string/app_name"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/green_primary"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -27,10 +27,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white"
-            app:tabIndicatorColor="@color/colorPrimary"
+            app:tabIndicatorColor="@color/green_primary"
             app:tabIndicatorHeight="4dp"
             app:tabMode="fixed"
-            app:tabSelectedTextColor="@color/colorPrimary"
+            app:tabSelectedTextColor="@color/green_primary"
             app:tabTextColor="@color/black" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -48,7 +48,7 @@
         android:layout_margin="16dp"
         android:text="Create Group"
         android:textColor="@color/white"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/green_primary"
         app:icon="@drawable/ic_add"
         app:iconTint="@color/white"
         app:layout_anchor="@id/viewPager"
@@ -62,7 +62,7 @@
         android:layout_margin="16dp"
         android:text="Join Group"
         android:textColor="@color/white"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/green_primary"
         app:icon="@drawable/ic_add"
         app:iconTint="@color/white"
         app:layout_anchor="@id/viewPager"

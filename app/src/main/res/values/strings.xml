@@ -10,6 +10,10 @@
     <string name="app_logo">App Logo</string>
     <string name="app_slogan">App Slogan</string>
 
+    <!-- Profile  -->
+    <string name="log_out">LOG OUT</string>
+    <string name="change_card">CHANGE CARD</string>
+
 
     <!-- Login Screen -->
     <string name="hint_email">Email Address</string>
@@ -20,6 +24,7 @@
     <string name="phone_number">Phone number</string>
     <string name="show_password">Show Password</string>
     <string name="hide_password">Hide Password</string>
+    <string name="edit_password">Edit Password</string>
 
     <!-- Register Screen -->
     <string name="hint_first_name">First Name</string>
