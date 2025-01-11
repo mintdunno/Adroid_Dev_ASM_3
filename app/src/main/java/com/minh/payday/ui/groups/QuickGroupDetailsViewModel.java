@@ -46,6 +46,18 @@ public class QuickGroupDetailsViewModel extends ViewModel {
                 .addOnFailureListener(e -> groupDetails.postValue(null));
     }
 
+    public void addMemberToGroup(String groupId, String memberName) {
+        groupRepository.addMemberToQuickGroup(groupId, memberName)
+                .addOnSuccessListener(aVoid -> {
+                    // Instead of posting a success message, trigger a refresh of group details
+                    loadGroupDetails(groupId);
+                })
+                .addOnFailureListener(e -> {
+                    // Handle failure
+                    Log.e("QuickGroupDetailsVM", "Error adding member", e);
+                });
+    }
+
     public LiveData<Boolean> deleteGroup(String groupId) {
         groupDeletionStatus = new MutableLiveData<>();
         db.collection("groups").document(groupId)

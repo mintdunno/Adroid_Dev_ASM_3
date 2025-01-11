@@ -1,5 +1,6 @@
 package com.minh.payday.ui.groups;
 
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,16 +12,12 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.tabs.TabLayout;
-import com.google.firebase.auth.FirebaseAuth;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Group;
 import com.minh.payday.ui.MainActivity;
@@ -29,7 +26,7 @@ import com.minh.payday.ui.groups.adapters.ExpensesAdapter;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class QuickGroupDetailsActivity extends AppCompatActivity {
+public class QuickGroupDetailsActivity extends AppCompatActivity implements AddMemberDialogFragment.AddMemberDialogListener {
 
     private static final String TAG = "QuickGroupDetailsActivity";
     public static final String EXTRA_GROUP_ID = "groupId";
@@ -84,7 +81,9 @@ public class QuickGroupDetailsActivity extends AppCompatActivity {
         viewModel.getGroupDetails(groupId).observe(this, group -> {
             if (group != null) {
                 groupNameTextView.setText(group.getGroupName());
-                // ... set other details like date, location, member count
+                groupDateTextView.setText("Your Date"); // Replace with actual date
+                groupLocationTextView.setText("Your Location"); // Replace with actual location
+                memberCountTextView.setText(String.valueOf(group.getMembers() != null ? group.getMembers().size() : 0));
             } else {
                 // Handle error or no data case
                 Toast.makeText(this, "Error loading group details", Toast.LENGTH_SHORT).show();
@@ -92,35 +91,9 @@ public class QuickGroupDetailsActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed(); // Handle back button press
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void showPopupMenu(View view) {
-        PopupMenu popupMenu = new PopupMenu(this, view);
-        popupMenu.getMenuInflater().inflate(R.menu.group_settings_menu, popupMenu.getMenu());
-
-        popupMenu.setOnMenuItemClickListener(item -> {
-            // Use if-else if-else instead of switch-case
-            if (item.getItemId() == R.id.menu_add_member) {
-                // Handle add member
-                Toast.makeText(this, "Add Member Clicked", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (item.getItemId() == R.id.menu_delete_group) {
-                // Handle delete group
-                showDeleteConfirmationDialog();
-                return true;
-            } else {
-                return false;
-            }
-        });
-
-        popupMenu.show();
+    private void showAddMemberDialog() {
+        AddMemberDialogFragment dialogFragment = new AddMemberDialogFragment();
+        dialogFragment.show(getSupportFragmentManager(), "AddMemberDialogFragment");
     }
 
     private void showDeleteConfirmationDialog() {
@@ -148,5 +121,43 @@ public class QuickGroupDetailsActivity extends AppCompatActivity {
                 Toast.makeText(QuickGroupDetailsActivity.this, "Error deleting group", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onMemberAdded(String memberName) {
+        viewModel.addMemberToGroup(groupId, memberName);
+        // Show success dialog
+        new AlertDialog.Builder(this)
+                .setTitle("Member Added")
+                .setMessage(memberName + " has been added to the group.")
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
+    private void showPopupMenu(View view) {
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        popupMenu.getMenuInflater().inflate(R.menu.group_settings_menu, popupMenu.getMenu());
+
+        popupMenu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.menu_add_member) {
+                showAddMemberDialog();
+                return true;
+            } else if (item.getItemId() == R.id.menu_delete_group) {
+                showDeleteConfirmationDialog();
+                return true;
+            }
+            return false;
+        });
+
+        popupMenu.show();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed(); // Handle back button press
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

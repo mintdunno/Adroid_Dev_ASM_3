@@ -136,4 +136,11 @@ public class GroupRepository {
         // Implement logic to generate a unique room code
         return "ABCDEF"; // Replace with actual room code generation logic
     }
+
+    public Task<Void> addMemberToQuickGroup(String groupId, String memberName) {
+        return firestore.collection("groups").document(groupId)
+                .update("members", FieldValue.arrayUnion(memberName))
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Member added to group successfully"))
+                .addOnFailureListener(e -> Log.w(TAG, "Error adding member to group", e));
+    }
 }
