@@ -18,12 +18,15 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
 
     private List<String> memberNames;
     private List<CheckBox> memberCheckBoxes;
+    private List<Double> memberAmounts; // List to store amounts for each member
 
     public MemberSplitAdapter(List<String> memberNames) {
         this.memberNames = memberNames;
         this.memberCheckBoxes = new ArrayList<>();
+        this.memberAmounts = new ArrayList<>();
         for (int i = 0; i < memberNames.size(); i++) {
-            memberCheckBoxes.add(null); // Initialize with nulls
+            memberCheckBoxes.add(null); // Initialize checkboxes with nulls
+            memberAmounts.add(0.0);    // Initialize amounts with 0.0
         }
     }
 
@@ -39,17 +42,28 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
         String memberName = memberNames.get(position);
         holder.memberNameTextView.setText(memberName);
         holder.memberCheckBox.setChecked(true); // Set initial state as checked
-        holder.memberAmountTextView.setText("$50.00"); // Set initial amount, later calculate based on split
 
         // Keep track of checkboxes
-        if (memberCheckBoxes.size() > position && memberCheckBoxes.get(position) == null) {
+        if (memberCheckBoxes.size() > position) {
             memberCheckBoxes.set(position, holder.memberCheckBox);
+        }
+
+        // Set the amount for each member
+        if (memberAmounts.size() > position) {
+            holder.memberAmountTextView.setText(String.format("$%.2f", memberAmounts.get(position)));
         }
     }
 
     @Override
     public int getItemCount() {
         return memberNames.size();
+    }
+
+    public void updateMemberAmount(int position, double amount) {
+        if (position >= 0 && position < memberAmounts.size()) {
+            memberAmounts.set(position, amount);
+            notifyItemChanged(position);
+        }
     }
 
     public List<String> getSelectedMembers() {
@@ -60,6 +74,14 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
             }
         }
         return selectedMembers;
+    }
+
+    public void clearSelectedMembers() {
+        for (CheckBox checkBox : memberCheckBoxes) {
+            if (checkBox != null) {
+                checkBox.setChecked(false);
+            }
+        }
     }
 
     static class MemberViewHolder extends RecyclerView.ViewHolder {
@@ -74,11 +96,24 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
             memberAmountTextView = itemView.findViewById(R.id.memberAmountTextView);
         }
     }
-
     public String getMemberName(int position) {
         if (position >= 0 && position < memberNames.size()) {
             return memberNames.get(position);
         }
         return null;
     }
+
+    // Method to update member names
+    public void updateMemberNames(List<String> newMemberNames) {
+        this.memberNames.clear();
+        this.memberNames.addAll(newMemberNames);
+        this.memberCheckBoxes.clear();
+        this.memberAmounts.clear();
+        for (int i = 0; i < memberNames.size(); i++) {
+            memberCheckBoxes.add(null);
+            memberAmounts.add(0.0);
+        }
+        notifyDataSetChanged();
+    }
+
 }

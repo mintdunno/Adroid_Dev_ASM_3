@@ -89,41 +89,4 @@ public class QuickGroupDetailsViewModel extends ViewModel {
                 .addOnFailureListener(e -> groupDeletionStatus.setValue(false));
         return groupDeletionStatus;
     }
-
-    public LiveData<List<Expense>> getGroupExpenses(String groupId) {
-        if (groupExpenses == null) {
-            groupExpenses = new MutableLiveData<>();
-            loadGroupExpenses(groupId);
-        }
-        return groupExpenses;
-    }
-
-    private void loadGroupExpenses(String groupId) {
-        db.collection("expenses")
-                .whereEqualTo("groupId", groupId)
-                .orderBy("timestamp")
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        Log.w("QuickGroupDetailsVM", "Listen for expenses failed.", error);
-                        groupExpenses.setValue(null);
-                        return;
-                    }
-
-                    List<Expense> expenses = new ArrayList<>();
-                    if (value != null) {
-                        for (QueryDocumentSnapshot doc : value) {
-                            Expense expense = doc.toObject(Expense.class);
-                            if (expense != null) {
-                                expense.setExpenseId(doc.getId());
-                                expenses.add(expense);
-                            }
-                        }
-                    }
-                    groupExpenses.setValue(expenses);
-                });
-    }
-
-    public LiveData<Group> getGroup(String groupId) {
-        return groupRepository.getGroupById(groupId);
-    }
 }

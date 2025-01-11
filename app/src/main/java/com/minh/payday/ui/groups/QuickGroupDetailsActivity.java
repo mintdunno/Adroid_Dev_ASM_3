@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class QuickGroupDetailsActivity extends AppCompatActivity implements AddMemberDialogFragment.AddMemberDialogListener {
+
     private static final String TAG = "QuickGroupDetailsActivity";
     public static final String EXTRA_GROUP_ID = "groupId";
 
@@ -45,8 +46,6 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
 
     private TextView myExpensesTextView;
     private TextView totalExpensesTextView;
-    private String currentUserName = ""; // Add a member variable to store the name
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +120,6 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
     private void updateUIWithExpenses(List<Expense> expenses) {
         if (expenses != null) {
             expensesAdapter.updateExpenses(expenses);
-            // Calculate and display "My Expenses" and "Total Expenses"
             calculateAndDisplayExpenses(expenses);
         } else {
             Toast.makeText(this, "Error loading expenses", Toast.LENGTH_SHORT).show();
@@ -132,14 +130,17 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
         double myTotalExpenses = 0;
         double totalExpenses = 0;
 
-//        String currentUserName = getCurrentUserName();
-
-        String currentUserName = "testing";
-
+//        String currentUserName = getCurrentUserName(); // Implement this method to get the current user's name
+        String currentUserName = "getCurrentUserName"; // Implement this method to get the current user's name
         for (Expense expense : expenses) {
             totalExpenses += expense.getAmount();
+
+            // Check if the current user is the payer
             if (expense.getPayerId().equals(currentUserName)) {
                 myTotalExpenses += expense.getAmount();
+            } else if (expense.getMemberAmounts().containsKey(currentUserName)) {
+                // If the current user is not the payer but is in the members list, add their share
+                myTotalExpenses += expense.getMemberAmounts().get(currentUserName);
             }
         }
 
@@ -213,7 +214,7 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            onBackPressed(); // Handle back button press
+            onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);
