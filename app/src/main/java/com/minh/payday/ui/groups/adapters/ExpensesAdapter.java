@@ -11,11 +11,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Expense;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ExpenseViewHolder> {
 
     private List<Expense> expenses;
+    private static final String DATE_FORMAT = "dd/MM/yyyy";
 
     public ExpensesAdapter(List<Expense> expenses) {
         this.expenses = expenses;
@@ -34,7 +38,10 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.Expens
         holder.expenseNameTextView.setText(expense.getDescription());
         holder.expenseAmountTextView.setText(String.format("$%.2f", expense.getAmount()));
         holder.paidByTextView.setText("Paid by " + expense.getPayerId());
-        // Set other fields as necessary
+
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
+        String formattedDate = sdf.format(new Date(expense.getTimestamp()));
+        holder.dateTextView.setText(formattedDate);
     }
 
     @Override
@@ -51,14 +58,14 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.Expens
         TextView expenseNameTextView;
         TextView expenseAmountTextView;
         TextView paidByTextView;
-        // Add other views as needed
+        TextView dateTextView;
 
         ExpenseViewHolder(View itemView) {
             super(itemView);
             expenseNameTextView = itemView.findViewById(R.id.expenseNameTextView);
             expenseAmountTextView = itemView.findViewById(R.id.expenseAmountTextView);
             paidByTextView = itemView.findViewById(R.id.paidByTextView);
-            // Initialize other views
+            dateTextView = itemView.findViewById(R.id.dateTextView);
         }
     }
 }

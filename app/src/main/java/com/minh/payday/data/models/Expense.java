@@ -1,7 +1,6 @@
 package com.minh.payday.data.models;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,20 +9,22 @@ public class Expense implements Serializable {
     private String expenseId;
     private String groupId;
     private double amount;
-    private String description;
-    private String payerId;
-    private String category;
-    // userld of who paid
-    private List<String> participants; // user IDs who share this expense
-    private long timestamp;
-    private String receiptUrl;
+    private String description; // Title of the expense
+    private String payerId; // ID of the user who paid
+    private String category; // Optional category
+    private List<String> participants; // Names of users who are part of the expense
+    private long timestamp; // Timestamp of when the expense was added
+    private String receiptUrl; // Optional URL to a receipt image
+    private Map<String, Double> memberAmounts; // Map of member names to amounts owed
 
+    // Required empty constructor for Firestore
     public Expense() {
     }
 
+    // Constructor (you can add more as needed)
     public Expense(String expenseId, String groupId, double amount, String description,
                    String payerId, List<String> participants, String category,
-                   long timestamp, String receiptUrl) {
+                   long timestamp, String receiptUrl, Map<String, Double> memberAmounts) {
         this.expenseId = expenseId;
         this.groupId = groupId;
         this.amount = amount;
@@ -33,9 +34,11 @@ public class Expense implements Serializable {
         this.category = category;
         this.timestamp = timestamp;
         this.receiptUrl = receiptUrl;
+        this.memberAmounts = memberAmounts;
     }
 
-    // Getters & Setters
+    // Getters and Setters
+
     public String getExpenseId() {
         return expenseId;
     }
@@ -108,7 +111,15 @@ public class Expense implements Serializable {
         this.receiptUrl = receiptUrl;
     }
 
-    // Optional: Convert to map for Firestore
+    public Map<String, Double> getMemberAmounts() {
+        return memberAmounts;
+    }
+
+    public void setMemberAmounts(Map<String, Double> memberAmounts) {
+        this.memberAmounts = memberAmounts;
+    }
+
+    // Convert to Map for Firestore
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("expenseId", expenseId);
@@ -120,6 +131,7 @@ public class Expense implements Serializable {
         map.put("category", category);
         map.put("timestamp", timestamp);
         map.put("receiptUrl", receiptUrl);
+        map.put("memberAmounts", memberAmounts); // Store the member amounts
         return map;
     }
 }

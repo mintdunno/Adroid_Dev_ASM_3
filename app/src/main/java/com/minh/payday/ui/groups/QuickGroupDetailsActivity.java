@@ -1,6 +1,5 @@
 package com.minh.payday.ui.groups;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +11,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
@@ -20,15 +20,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.minh.payday.R;
+import com.minh.payday.data.models.Expense;
 import com.minh.payday.data.models.Group;
 import com.minh.payday.ui.MainActivity;
 import com.minh.payday.ui.groups.adapters.ExpensesAdapter;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class QuickGroupDetailsActivity extends AppCompatActivity implements AddMemberDialogFragment.AddMemberDialogListener {
-
     private static final String TAG = "QuickGroupDetailsActivity";
     public static final String EXTRA_GROUP_ID = "groupId";
 
@@ -39,6 +40,13 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
     private TextView groupDateTextView;
     private TextView groupLocationTextView;
     private TextView memberCountTextView;
+    private ExpensesAdapter expensesAdapter;
+    private FloatingActionButton addExpenseFab;
+
+    private TextView myExpensesTextView;
+    private TextView totalExpensesTextView;
+    private String currentUserName = ""; // Add a member variable to store the name
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,61 +61,90 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
             return;
         }
 
-        viewModel = new ViewModelProvider(this).get(QuickGroupDetailsViewModel.class);
+        initializeViews();
+        setupToolbar();
+        setupRecyclerView();
+        setupExpenseFab();
+        setupViewModel();
+    }
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Show the back button
-
+    private void initializeViews() {
         groupNameTextView = findViewById(R.id.groupNameTextView);
         groupDateTextView = findViewById(R.id.groupDateTextView);
         groupLocationTextView = findViewById(R.id.groupLocationTextView);
         memberCountTextView = findViewById(R.id.memberCountTextView);
+        addExpenseFab = findViewById(R.id.addExpenseFab);
+        myExpensesTextView = findViewById(R.id.myExpensesTextView);
+        totalExpensesTextView = findViewById(R.id.totalExpensesTextView);
+    }
 
-        RecyclerView expensesRecyclerView = findViewById(R.id.expensesRecyclerView);
-        expensesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        ExpensesAdapter expensesAdapter = new ExpensesAdapter(new ArrayList<>());
-        expensesRecyclerView.setAdapter(expensesAdapter);
+    private void setupToolbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         ImageButton settingsButton = findViewById(R.id.settingsButton);
-        settingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPopupMenu(v);
-            }
+        settingsButton.setOnClickListener(v -> showPopupMenu(v));
+    }
+
+    private void setupRecyclerView() {
+        RecyclerView expensesRecyclerView = findViewById(R.id.expensesRecyclerView);
+        expensesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        expensesAdapter = new ExpensesAdapter(new ArrayList<>());
+        expensesRecyclerView.setAdapter(expensesAdapter);
+    }
+
+    private void setupExpenseFab() {
+        addExpenseFab.setOnClickListener(view -> {
+            Intent intent = new Intent(QuickGroupDetailsActivity.this, AddExpenseActivity.class);
+            intent.putExtra(AddExpenseActivity.EXTRA_GROUP_ID, groupId);
+            startActivity(intent);
         });
+    }
 
-        // Observe LiveData and update UI
-        viewModel.getGroupDetails(groupId).observe(this, group -> {
-            if (group != null) {
-                groupNameTextView.setText(group.getGroupName());
-                groupDateTextView.setText("Your Date"); // Replace with actual date
-                groupLocationTextView.setText("Your Location"); // Replace with actual location
-                memberCountTextView.setText(String.valueOf(group.getMembers() != null ? group.getMembers().size() : 0));
-            } else {
-                // Handle error or no data case
-                Toast.makeText(this, "Error loading group details", Toast.LENGTH_SHORT).show();
+    private void setupViewModel() {
+        viewModel = new ViewModelProvider(this).get(QuickGroupDetailsViewModel.class);
+        viewModel.getGroupDetails(groupId).observe(this, this::updateUIWithGroupDetails);
+        viewModel.getExpenses(groupId).observe(this, this::updateUIWithExpenses);
+    }
+
+    private void updateUIWithGroupDetails(Group group) {
+        if (group != null) {
+            groupNameTextView.setText(group.getGroupName());
+            memberCountTextView.setText(String.valueOf(group.getMembers() != null ? group.getMembers().size() : 0));
+        } else {
+            Toast.makeText(this, "Error loading group details", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateUIWithExpenses(List<Expense> expenses) {
+        if (expenses != null) {
+            expensesAdapter.updateExpenses(expenses);
+            // Calculate and display "My Expenses" and "Total Expenses"
+            calculateAndDisplayExpenses(expenses);
+        } else {
+            Toast.makeText(this, "Error loading expenses", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void calculateAndDisplayExpenses(List<Expense> expenses) {
+        double myTotalExpenses = 0;
+        double totalExpenses = 0;
+
+//        String currentUserName = getCurrentUserName();
+
+        String currentUserName = "testing";
+
+        for (Expense expense : expenses) {
+            totalExpenses += expense.getAmount();
+            if (expense.getPayerId().equals(currentUserName)) {
+                myTotalExpenses += expense.getAmount();
             }
-        });
+        }
 
-        FloatingActionButton addExpenseFab = findViewById(R.id.addExpenseFab);
-        addExpenseFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Get the group ID from the intent
-                String groupId = getIntent().getStringExtra(QuickGroupDetailsActivity.EXTRA_GROUP_ID);
-
-                // Create an intent to start AddExpenseActivity
-                Intent intent = new Intent(QuickGroupDetailsActivity.this, AddExpenseActivity.class);
-
-                // Put the group ID as an extra in the intent
-                intent.putExtra(AddExpenseActivity.EXTRA_GROUP_ID, groupId);
-
-                // Start the activity
-                startActivity(intent);
-            }
-        });
+        myExpensesTextView.setText(String.format("$%.2f", myTotalExpenses));
+        totalExpensesTextView.setText(String.format("$%.2f", totalExpenses));
     }
 
     private void showAddMemberDialog() {
@@ -159,9 +196,11 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
 
         popupMenu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.menu_add_member) {
+                // Handle add member
                 showAddMemberDialog();
                 return true;
             } else if (item.getItemId() == R.id.menu_delete_group) {
+                // Handle delete group
                 showDeleteConfirmationDialog();
                 return true;
             }
@@ -179,4 +218,5 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
         }
         return super.onOptionsItemSelected(item);
     }
+
 }

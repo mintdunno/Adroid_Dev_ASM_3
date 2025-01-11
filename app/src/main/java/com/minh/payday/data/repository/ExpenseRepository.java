@@ -36,6 +36,7 @@ public class ExpenseRepository {
                 .addSnapshotListener((querySnapshot, e) -> {
                     if (e != null) {
                         // Handle error
+                        expensesLiveData.setValue(null);
                         return;
                     }
                     List<Expense> expenseList = new ArrayList<>();

@@ -81,12 +81,12 @@ public class LiveGroupsAdapter extends RecyclerView.Adapter<LiveGroupsAdapter.Gr
                 if (currentGroup.getGroupType() == Group.GroupType.LIVE) {
                     // Launch LiveGroupDetailsActivity for LIVE groups
                     Intent intent = new Intent(holder.itemView.getContext(), LiveGroupDetailsActivity.class);
-                    intent.putExtra("groupId", currentGroup.getGroupId());
+                    intent.putExtra(LiveGroupDetailsActivity.EXTRA_GROUP_ID, currentGroup.getGroupId());
                     holder.itemView.getContext().startActivity(intent);
                 } else {
                     // Launch QuickGroupDetailsActivity for QUICK groups
                     Intent intent = new Intent(holder.itemView.getContext(), QuickGroupDetailsActivity.class);
-                    intent.putExtra("groupId", currentGroup.getGroupId());
+                    intent.putExtra(QuickGroupDetailsActivity.EXTRA_GROUP_ID, currentGroup.getGroupId());
                     holder.itemView.getContext().startActivity(intent);
                 }
             }

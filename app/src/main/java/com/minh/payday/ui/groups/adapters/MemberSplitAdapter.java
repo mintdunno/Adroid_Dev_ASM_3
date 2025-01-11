@@ -11,14 +11,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.minh.payday.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.MemberViewHolder> {
 
     private List<String> memberNames;
+    private List<CheckBox> memberCheckBoxes;
 
     public MemberSplitAdapter(List<String> memberNames) {
         this.memberNames = memberNames;
+        this.memberCheckBoxes = new ArrayList<>();
+        for (int i = 0; i < memberNames.size(); i++) {
+            memberCheckBoxes.add(null); // Initialize with nulls
+        }
     }
 
     @NonNull
@@ -34,11 +40,26 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
         holder.memberNameTextView.setText(memberName);
         holder.memberCheckBox.setChecked(true); // Set initial state as checked
         holder.memberAmountTextView.setText("$50.00"); // Set initial amount, later calculate based on split
+
+        // Keep track of checkboxes
+        if (memberCheckBoxes.size() > position && memberCheckBoxes.get(position) == null) {
+            memberCheckBoxes.set(position, holder.memberCheckBox);
+        }
     }
 
     @Override
     public int getItemCount() {
         return memberNames.size();
+    }
+
+    public List<String> getSelectedMembers() {
+        List<String> selectedMembers = new ArrayList<>();
+        for (int i = 0; i < memberNames.size(); i++) {
+            if (memberCheckBoxes.get(i) != null && memberCheckBoxes.get(i).isChecked()) {
+                selectedMembers.add(memberNames.get(i));
+            }
+        }
+        return selectedMembers;
     }
 
     static class MemberViewHolder extends RecyclerView.ViewHolder {
@@ -52,5 +73,12 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
             memberNameTextView = itemView.findViewById(R.id.memberNameTextView);
             memberAmountTextView = itemView.findViewById(R.id.memberAmountTextView);
         }
+    }
+
+    public String getMemberName(int position) {
+        if (position >= 0 && position < memberNames.size()) {
+            return memberNames.get(position);
+        }
+        return null;
     }
 }

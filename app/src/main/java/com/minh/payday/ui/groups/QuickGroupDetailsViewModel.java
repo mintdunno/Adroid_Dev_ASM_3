@@ -10,18 +10,27 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.minh.payday.data.models.Expense;
 import com.minh.payday.data.models.Group;
+import com.minh.payday.data.repository.ExpenseRepository;
 import com.minh.payday.data.repository.GroupRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class QuickGroupDetailsViewModel extends ViewModel {
 
     private GroupRepository groupRepository;
+    private ExpenseRepository expenseRepository;
     private MutableLiveData<Group> groupDetails;
+    private MutableLiveData<List<Expense>> groupExpenses;
     private MutableLiveData<Boolean> groupDeletionStatus;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public QuickGroupDetailsViewModel() {
         groupRepository = new GroupRepository();
+        expenseRepository = new ExpenseRepository();
     }
 
     public LiveData<Group> getGroupDetails(String groupId) {
@@ -46,10 +55,24 @@ public class QuickGroupDetailsViewModel extends ViewModel {
                 .addOnFailureListener(e -> groupDetails.postValue(null));
     }
 
+    public LiveData<List<Expense>> getExpenses(String groupId) {
+        if (groupExpenses == null) {
+            groupExpenses = new MutableLiveData<>();
+            loadExpenses(groupId);
+        }
+        return groupExpenses;
+    }
+
+    private void loadExpenses(String groupId) {
+        expenseRepository.getExpensesByGroup(groupId).observeForever(expenses -> {
+            groupExpenses.setValue(expenses);
+        });
+    }
+
     public void addMemberToGroup(String groupId, String memberName) {
         groupRepository.addMemberToQuickGroup(groupId, memberName)
                 .addOnSuccessListener(aVoid -> {
-                    // Instead of posting a success message, trigger a refresh of group details
+                    // Instead of posting a success message, trigger a refresh of group
                     loadGroupDetails(groupId);
                 })
                 .addOnFailureListener(e -> {
@@ -65,5 +88,42 @@ public class QuickGroupDetailsViewModel extends ViewModel {
                 .addOnSuccessListener(aVoid -> groupDeletionStatus.setValue(true))
                 .addOnFailureListener(e -> groupDeletionStatus.setValue(false));
         return groupDeletionStatus;
+    }
+
+    public LiveData<List<Expense>> getGroupExpenses(String groupId) {
+        if (groupExpenses == null) {
+            groupExpenses = new MutableLiveData<>();
+            loadGroupExpenses(groupId);
+        }
+        return groupExpenses;
+    }
+
+    private void loadGroupExpenses(String groupId) {
+        db.collection("expenses")
+                .whereEqualTo("groupId", groupId)
+                .orderBy("timestamp")
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Log.w("QuickGroupDetailsVM", "Listen for expenses failed.", error);
+                        groupExpenses.setValue(null);
+                        return;
+                    }
+
+                    List<Expense> expenses = new ArrayList<>();
+                    if (value != null) {
+                        for (QueryDocumentSnapshot doc : value) {
+                            Expense expense = doc.toObject(Expense.class);
+                            if (expense != null) {
+                                expense.setExpenseId(doc.getId());
+                                expenses.add(expense);
+                            }
+                        }
+                    }
+                    groupExpenses.setValue(expenses);
+                });
+    }
+
+    public LiveData<Group> getGroup(String groupId) {
+        return groupRepository.getGroupById(groupId);
     }
 }

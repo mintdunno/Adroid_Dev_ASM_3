@@ -1,6 +1,7 @@
 package com.minh.payday.data.models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,8 @@ public class Group implements Serializable {
         this.groupType = groupType;
         this.roomCode = roomCode;
     }
+
+    // Getters & Setters for all fields
 
     public String getGroupId() {
         return groupId;

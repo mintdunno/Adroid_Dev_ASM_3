@@ -1,13 +1,10 @@
 package com.minh.payday.ui.groups;
 
 import android.app.DatePickerDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -30,8 +27,10 @@ import com.minh.payday.ui.groups.adapters.MemberSplitAdapter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class AddExpenseActivity extends AppCompatActivity {
 
@@ -149,17 +148,26 @@ public class AddExpenseActivity extends AppCompatActivity {
         double amount = Double.parseDouble(amountEditText.getText().toString());
         String paidBy = paidBySpinner.getSelectedItem().toString();
         long timestamp = selectedDate.getTimeInMillis();
+        List<String> selectedMembers = memberSplitAdapter.getSelectedMembers();
 
-        // Assuming you have a way to get the current user's ID
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        // Basic input validation
+        if (title.isEmpty() || paidBy.isEmpty() || selectedMembers.isEmpty()) {
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Calculate split amount
+        Map<String, Double> memberAmounts = calculateSplit(amount, selectedMembers.size());
 
         // Create a new Expense object
         Expense expense = new Expense();
         expense.setGroupId(groupId);
         expense.setAmount(amount);
         expense.setDescription(title);
-        expense.setPayerId(paidBy);
+        expense.setPayerId(paidBy); // Storing payer's name
         expense.setTimestamp(timestamp);
+        expense.setParticipants(selectedMembers);
+        expense.setMemberAmounts(memberAmounts); // Set the calculated member amounts
 
         // Add the expense to Firestore
         expenseRepository.addOrUpdateExpense(expense)
@@ -171,5 +179,17 @@ public class AddExpenseActivity extends AppCompatActivity {
                     Log.e(TAG, "Error adding expense", e);
                     Toast.makeText(AddExpenseActivity.this, "Failed to add expense", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private Map<String, Double> calculateSplit(double totalAmount, int numMembers) {
+        Map<String, Double> memberAmounts = new HashMap<>();
+        if (numMembers > 0) {
+            double splitAmount = totalAmount / numMembers;
+            for (int i = 0; i < numMembers; i++) {
+                // Assign the split amount to each selected member
+                memberAmounts.put(memberSplitAdapter.getMemberName(i), splitAmount);
+            }
+        }
+        return memberAmounts;
     }
 }
