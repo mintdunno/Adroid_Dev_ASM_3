@@ -143,4 +143,27 @@ public class GroupRepository {
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "Member added to group successfully"))
                 .addOnFailureListener(e -> Log.w(TAG, "Error adding member to group", e));
     }
+
+    public LiveData<Group> getGroupById(String groupId) {
+        MutableLiveData<Group> groupLiveData = new MutableLiveData<>();
+        firestore.collection("groups").document(groupId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document != null && document.exists()) {
+                            Group group = document.toObject(Group.class);
+                            groupLiveData.setValue(group);
+                        } else {
+                            Log.d(TAG, "No such document");
+                            groupLiveData.setValue(null);
+                        }
+                    } else {
+                        Log.d(TAG, "get failed with ", task.getException());
+                        groupLiveData.setValue(null);
+                    }
+                });
+        return groupLiveData;
+    }
+
 }

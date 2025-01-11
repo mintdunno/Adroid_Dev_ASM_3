@@ -7,19 +7,18 @@ import java.util.List;
 import java.util.Map;
 
 public class Expense implements Serializable {
-
     private String expenseId;
     private String groupId;
     private double amount;
     private String description;
-    private String payerId;            // userId of who paid
+    private String payerId;
+    private String category;
+    // userld of who paid
     private List<String> participants; // user IDs who share this expense
-    private String category;           // e.g., "Food", "Travel", etc.
-    private long timestamp;            // storing as Unix epoch
-    private String receiptUrl;         // optional image receipt
+    private long timestamp;
+    private String receiptUrl;
 
     public Expense() {
-        // Required empty constructor
     }
 
     public Expense(String expenseId, String groupId, double amount, String description,
@@ -78,9 +77,6 @@ public class Expense implements Serializable {
     }
 
     public List<String> getParticipants() {
-        if (participants == null) {
-            participants = new ArrayList<>();
-        }
         return participants;
     }
 

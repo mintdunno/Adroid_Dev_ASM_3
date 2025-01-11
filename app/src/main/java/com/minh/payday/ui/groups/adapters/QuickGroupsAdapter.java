@@ -1,5 +1,6 @@
 package com.minh.payday.ui.groups.adapters;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.minh.payday.R;
 import com.minh.payday.data.models.Group;
+import com.minh.payday.ui.groups.LiveGroupDetailsActivity;
+import com.minh.payday.ui.groups.QuickGroupDetailsActivity;
 
 import java.util.List;
 
@@ -34,6 +37,26 @@ public class QuickGroupsAdapter extends RecyclerView.Adapter<QuickGroupsAdapter.
         Group group = groups.get(position);
         holder.groupNameTextView.setText(group.getGroupName());
         // Set other data to views
+        // In onBindViewHolder()
+        holder.itemView.setOnClickListener(view -> {
+            int currentPosition = holder.getAdapterPosition();
+            if (currentPosition != RecyclerView.NO_POSITION) {
+                Group currentGroup = groups.get(currentPosition);
+
+                // Determine the type of the group and launch appropriate activity
+                if (currentGroup.getGroupType() == Group.GroupType.LIVE) {
+                    // Launch LiveGroupDetailsActivity for LIVE groups
+                    Intent intent = new Intent(holder.itemView.getContext(), LiveGroupDetailsActivity.class);
+                    intent.putExtra(LiveGroupDetailsActivity.EXTRA_GROUP_ID, currentGroup.getGroupId());
+                    holder.itemView.getContext().startActivity(intent);
+                } else {
+                    // Launch QuickGroupDetailsActivity for QUICK groups
+                    Intent intent = new Intent(holder.itemView.getContext(), QuickGroupDetailsActivity.class);
+                    intent.putExtra(QuickGroupDetailsActivity.EXTRA_GROUP_ID, currentGroup.getGroupId());
+                    holder.itemView.getContext().startActivity(intent);
+                }
+            }
+        });
     }
 
     @Override

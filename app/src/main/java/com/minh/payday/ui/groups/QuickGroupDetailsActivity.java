@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Group;
 import com.minh.payday.ui.MainActivity;
@@ -87,6 +88,24 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
             } else {
                 // Handle error or no data case
                 Toast.makeText(this, "Error loading group details", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        FloatingActionButton addExpenseFab = findViewById(R.id.addExpenseFab);
+        addExpenseFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Get the group ID from the intent
+                String groupId = getIntent().getStringExtra(QuickGroupDetailsActivity.EXTRA_GROUP_ID);
+
+                // Create an intent to start AddExpenseActivity
+                Intent intent = new Intent(QuickGroupDetailsActivity.this, AddExpenseActivity.class);
+
+                // Put the group ID as an extra in the intent
+                intent.putExtra(AddExpenseActivity.EXTRA_GROUP_ID, groupId);
+
+                // Start the activity
+                startActivity(intent);
             }
         });
     }
