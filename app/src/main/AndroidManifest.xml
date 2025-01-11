@@ -12,43 +12,37 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PayDay"
         tools:targetApi="31">
-
         <!-- SplashActivity is the LAUNCHER (first screen) -->
         <activity
             android:name=".ui.auth.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- LoginActivity -->
+        </activity> <!-- LoginActivity -->
         <activity
             android:name=".ui.auth.LoginActivity"
-            android:exported="false" />
-
-        <!-- RegisterActivity -->
+            android:exported="false" /> <!-- RegisterActivity -->
         <activity
             android:name=".ui.auth.RegisterActivity"
-            android:exported="false" />
-
-        <!-- ForgotPasswordActivity -->
+            android:exported="false" /> <!-- ForgotPasswordActivity -->
         <activity
             android:name=".ui.auth.ForgotPasswordActivity"
-            android:exported="false" />
-
-        <!-- MainActivity (shown after login/registration) -->
+            android:exported="false" /> <!-- MainActivity (shown after login/registration) -->
         <activity
             android:name=".ui.MainActivity"
-            android:exported="false" />
+            android:exported="false" /> <!-- Add declarations for your new activities here -->
+        <activity
+            android:name=".ui.groups.QuickGroupDetailsActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.MainActivity" />
 
-        <!-- Add declarations for your new activities here -->
         <activity
             android:name=".ui.groups.LiveGroupDetailsActivity"
-            android:exported="false" />
-
+            android:exported="false"
+            android:parentActivityName=".ui.MainActivity" />
     </application>
-
 
 </manifest>

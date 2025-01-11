@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Group;
 import com.minh.payday.ui.groups.LiveGroupDetailsActivity;
+import com.minh.payday.ui.groups.QuickGroupDetailsActivity;
 
 import java.util.List;
 
@@ -76,16 +77,17 @@ public class LiveGroupsAdapter extends RecyclerView.Adapter<LiveGroupsAdapter.Gr
             if (currentPosition != RecyclerView.NO_POSITION) {
                 Group currentGroup = groups.get(currentPosition);
 
-                // Determine the type of the group
+                // Determine the type of the group and launch appropriate activity
                 if (currentGroup.getGroupType() == Group.GroupType.LIVE) {
                     // Launch LiveGroupDetailsActivity for LIVE groups
                     Intent intent = new Intent(holder.itemView.getContext(), LiveGroupDetailsActivity.class);
                     intent.putExtra("groupId", currentGroup.getGroupId());
                     holder.itemView.getContext().startActivity(intent);
                 } else {
-                    // Optionally handle QUICK groups differently, or do nothing
-                    // For example, you might show a Toast message or log an error
-                    Log.d("LiveGroupsAdapter", "Quick group clicked, no action specified");
+                    // Launch QuickGroupDetailsActivity for QUICK groups
+                    Intent intent = new Intent(holder.itemView.getContext(), QuickGroupDetailsActivity.class);
+                    intent.putExtra("groupId", currentGroup.getGroupId());
+                    holder.itemView.getContext().startActivity(intent);
                 }
             }
         });
