@@ -127,26 +127,29 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
     }
 
     private void calculateAndDisplayExpenses(List<Expense> expenses) {
-        double myTotalExpenses = 0;
-        double totalExpenses = 0;
+        viewModel.getGroupDetails(groupId).observe(this, group -> {
+            if (group != null) {
+                double myTotalExpenses = 0;
+                double totalExpenses = 0;
+                String ownerId = group.getOwnerId();
 
-//        String currentUserName = getCurrentUserName(); // Implement this method to get the current user's name
-        String currentUserName = "getCurrentUserName"; // Implement this method to get the current user's name
-        for (Expense expense : expenses) {
-            totalExpenses += expense.getAmount();
+                for (Expense expense : expenses) {
+                    totalExpenses += expense.getAmount();
+                    // Check if the payer is in the members list and if the payer is the owner.
+                    if (group.getMembers().contains(expense.getPayerId())) {
+                        if (expense.getPayerId().equals(ownerId)) {
+                            myTotalExpenses += expense.getAmount();
+                        }
+                    }
+                }
 
-            // Check if the current user is the payer
-            if (expense.getPayerId().equals(currentUserName)) {
-                myTotalExpenses += expense.getAmount();
-            } else if (expense.getMemberAmounts().containsKey(currentUserName)) {
-                // If the current user is not the payer but is in the members list, add their share
-                myTotalExpenses += expense.getMemberAmounts().get(currentUserName);
+                myExpensesTextView.setText(String.format("$%.2f", myTotalExpenses));
+                totalExpensesTextView.setText(String.format("$%.2f", totalExpenses));
             }
-        }
-
-        myExpensesTextView.setText(String.format("$%.2f", myTotalExpenses));
-        totalExpensesTextView.setText(String.format("$%.2f", totalExpenses));
+        });
     }
+
+    // ... other methods remain unchanged ...
 
     private void showAddMemberDialog() {
         AddMemberDialogFragment dialogFragment = new AddMemberDialogFragment();
@@ -214,10 +217,9 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
+            onBackPressed(); // Handle back button press
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
 }
