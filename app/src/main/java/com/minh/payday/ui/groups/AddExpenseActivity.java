@@ -164,7 +164,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         expense.setGroupId(groupId);
         expense.setAmount(amount);
         expense.setDescription(title);
-        expense.setPayerId(paidBy); // Storing payer's name
+        expense.setPayerId(paidBy);
         expense.setTimestamp(timestamp);
         expense.setParticipants(selectedMembers);
         expense.setMemberAmounts(memberAmounts); // Set the calculated member amounts
@@ -186,8 +186,13 @@ public class AddExpenseActivity extends AppCompatActivity {
         if (numMembers > 0) {
             double splitAmount = totalAmount / numMembers;
             for (int i = 0; i < numMembers; i++) {
-                // Assign the split amount to each selected member
-                memberAmounts.put(memberSplitAdapter.getMemberName(i), splitAmount);
+                // Use the member name as the key
+                String memberName = memberSplitAdapter.getMemberName(i);
+                if (memberName != null) {
+                    memberAmounts.put(memberName, splitAmount);
+                } else {
+                    Log.e(TAG, "Member name is null at index: " + i);
+                }
             }
         }
         return memberAmounts;

@@ -19,9 +19,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Expense;
 import com.minh.payday.data.models.Group;
+import com.minh.payday.data.models.User;
+import com.minh.payday.data.repository.UserRepository;
 import com.minh.payday.ui.MainActivity;
 import com.minh.payday.ui.groups.adapters.ExpensesAdapter;
 
@@ -43,6 +47,7 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
     private TextView memberCountTextView;
     private ExpensesAdapter expensesAdapter;
     private FloatingActionButton addExpenseFab;
+    private UserRepository userRepository;
 
     private TextView myExpensesTextView;
     private TextView totalExpensesTextView;
@@ -59,6 +64,8 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
             finish();
             return;
         }
+
+        userRepository = new UserRepository();
 
         initializeViews();
         setupToolbar();
@@ -127,33 +134,66 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
     }
 
     private void calculateAndDisplayExpenses(List<Expense> expenses) {
-        viewModel.getGroupDetails(groupId).observe(this, group -> {
-            if (group != null) {
-                double myTotalExpenses = 0;
-                double totalExpenses = 0;
-                String ownerId = group.getOwnerId();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            userRepository.fetchUserById(currentUser.getUid()).observe(this, user -> {
+                if (user != null) {
+                    String currentUserName = user.getFirstName();
+                    double myTotalExpenses = 0;
+                    double totalExpenses = 0;
 
-                for (Expense expense : expenses) {
-                    totalExpenses += expense.getAmount();
-                    // Check if the payer is in the members list and if the payer is the owner.
-                    if (group.getMembers().contains(expense.getPayerId())) {
-                        if (expense.getPayerId().equals(ownerId)) {
+                    for (Expense expense : expenses) {
+                        totalExpenses += expense.getAmount();
+                        if (expense.getPayerId().equals(currentUserName)) {
                             myTotalExpenses += expense.getAmount();
+                        } else if (expense.getMemberAmounts().containsKey(currentUserName)) {
+                            myTotalExpenses += expense.getMemberAmounts().get(currentUserName);
                         }
                     }
-                }
 
-                myExpensesTextView.setText(String.format("$%.2f", myTotalExpenses));
-                totalExpensesTextView.setText(String.format("$%.2f", totalExpenses));
-            }
-        });
+                    myExpensesTextView.setText(String.format("$%.2f", myTotalExpenses));
+                    totalExpensesTextView.setText(String.format("$%.2f", totalExpenses));
+                } else {
+                    Log.e(TAG, "Could not fetch current user's name");
+                }
+            });
+        } else {
+            Log.e(TAG, "Current user is null");
+        }
     }
 
-    // ... other methods remain unchanged ...
+    private void showPopupMenu(View view) {
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        popupMenu.getMenuInflater().inflate(R.menu.group_settings_menu, popupMenu.getMenu());
+
+        popupMenu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.menu_add_member) {
+                showAddMemberDialog();
+                return true;
+            } else if (item.getItemId() == R.id.menu_delete_group) {
+                showDeleteConfirmationDialog();
+                return true;
+            }
+            return false;
+        });
+
+        popupMenu.show();
+    }
 
     private void showAddMemberDialog() {
         AddMemberDialogFragment dialogFragment = new AddMemberDialogFragment();
         dialogFragment.show(getSupportFragmentManager(), "AddMemberDialogFragment");
+    }
+
+    @Override
+    public void onMemberAdded(String memberName) {
+        viewModel.addMemberToGroup(groupId, memberName);
+        // Show success dialog
+        new AlertDialog.Builder(this)
+                .setTitle("Member Added")
+                .setMessage(memberName + " has been added to the group.")
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
 
     private void showDeleteConfirmationDialog() {
@@ -184,40 +224,9 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
     }
 
     @Override
-    public void onMemberAdded(String memberName) {
-        viewModel.addMemberToGroup(groupId, memberName);
-        // Show success dialog
-        new AlertDialog.Builder(this)
-                .setTitle("Member Added")
-                .setMessage(memberName + " has been added to the group.")
-                .setPositiveButton(android.R.string.ok, null)
-                .show();
-    }
-
-    private void showPopupMenu(View view) {
-        PopupMenu popupMenu = new PopupMenu(this, view);
-        popupMenu.getMenuInflater().inflate(R.menu.group_settings_menu, popupMenu.getMenu());
-
-        popupMenu.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.menu_add_member) {
-                // Handle add member
-                showAddMemberDialog();
-                return true;
-            } else if (item.getItemId() == R.id.menu_delete_group) {
-                // Handle delete group
-                showDeleteConfirmationDialog();
-                return true;
-            }
-            return false;
-        });
-
-        popupMenu.show();
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            onBackPressed(); // Handle back button press
+            onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);

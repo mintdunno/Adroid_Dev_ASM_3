@@ -1,5 +1,9 @@
 package com.minh.payday.data.repository;
 
+import static android.content.ContentValues.TAG;
+
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -59,12 +63,18 @@ public class UserRepository {
         MutableLiveData<User> userLiveData = new MutableLiveData<>();
         firestore.collection("users").document(userId)
                 .addSnapshotListener((docSnapshot, e) -> {
-                    if (e != null || docSnapshot == null || !docSnapshot.exists()) {
-                        // handle error or empty doc
+                    if (e != null) {
+                        // Handle error
+                        Log.w(TAG, "Listen failed.", e);
                         return;
                     }
-                    User fetchedUser = docSnapshot.toObject(User.class);
-                    userLiveData.setValue(fetchedUser);
+                    if (docSnapshot != null && docSnapshot.exists()) {
+                        User fetchedUser = docSnapshot.toObject(User.class);
+                        userLiveData.setValue(fetchedUser);
+                    } else {
+                        Log.d(TAG, "User document not found.");
+                        userLiveData.setValue(null);
+                    }
                 });
         return userLiveData;
     }
@@ -96,5 +106,4 @@ public class UserRepository {
         return null;
     }
 
-    // More user-related operations as needed...
 }
