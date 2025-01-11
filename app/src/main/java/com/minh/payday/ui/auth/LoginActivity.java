@@ -91,16 +91,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loginUser(String email, String password) {
-
-        // Temporarily bypass Firebase authentication for testing
-        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-            Toast.makeText(LoginActivity.this, "Bypassing login for testing purposes", Toast.LENGTH_SHORT).show();
-            // Directly go to MainActivity
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-            finish(); // close login screen
-            return;
-        }
-
         FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {

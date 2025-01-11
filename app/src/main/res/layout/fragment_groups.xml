@@ -27,10 +27,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white"
-            app:tabIndicatorColor="@color/colorPrimary"
+            app:tabIndicatorColor="@color/green_primary"
             app:tabIndicatorHeight="4dp"
             app:tabMode="fixed"
-            app:tabSelectedTextColor="@color/colorPrimary"
+            app:tabSelectedTextColor="@color/green_primary"
             app:tabTextColor="@color/black" />
     </com.google.android.material.appbar.AppBarLayout>
 
