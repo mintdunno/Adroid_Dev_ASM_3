@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 
 public class GroupRepository {
     private final FirebaseFirestore firestore;
@@ -84,7 +85,8 @@ public class GroupRepository {
     public Task<Void> createGroup(Group group) {
         if (group.getGroupType() == Group.GroupType.LIVE) {
             // Generate a unique room code for Live Groups
-            group.setRoomCode(generateRoomCode());
+            String roomCode = generateRoomCode();
+            group.setRoomCode(roomCode);
         }
 
         String currentUserId = Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
@@ -108,11 +110,13 @@ public class GroupRepository {
                     String generatedId = Objects.requireNonNull(task.getResult()).getId();
                     group.setGroupId(generatedId);
                     groupMap.put("groupId", generatedId); // Update the map with the new ID
+
                     // Use set() with merge option to update the document with the generated ID
                     return firestore.collection("groups").document(generatedId).set(groupMap, SetOptions.merge());
                 });
     }
 
+    // In GroupRepository.java
     public Task<Void> joinGroup(String roomCode, String userId) {
         return firestore.collection("groups")
                 .whereEqualTo("roomCode", roomCode)
@@ -122,19 +126,34 @@ public class GroupRepository {
                     if (!task.isSuccessful()) {
                         throw Objects.requireNonNull(task.getException());
                     }
+
                     if (Objects.requireNonNull(task.getResult()).isEmpty()) {
                         throw new Exception("No group found with the provided room code.");
                     }
+
+                    // Assuming only one group can have the same room code
                     DocumentSnapshot groupDoc = task.getResult().getDocuments().get(0);
                     String groupId = groupDoc.getId();
+
+                    // Add the user to the group's members list
                     return firestore.collection("groups").document(groupId)
                             .update("members", FieldValue.arrayUnion(userId));
                 });
     }
 
     private String generateRoomCode() {
-        // Implement logic to generate a unique room code
-        return "ABCDEF"; // Replace with actual room code generation logic
+        // Use a combination of uppercase letters and digits
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder code = new StringBuilder();
+        Random rnd = new Random();
+
+        // Generate a 6-character code
+        while (code.length() < 6) {
+            int index = (int) (rnd.nextFloat() * chars.length());
+            code.append(chars.charAt(index));
+        }
+
+        return code.toString();
     }
 
     public Task<Void> addMemberToQuickGroup(String groupId, String memberName) {
