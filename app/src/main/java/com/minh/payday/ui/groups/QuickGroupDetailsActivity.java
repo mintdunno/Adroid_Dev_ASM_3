@@ -1,5 +1,7 @@
 package com.minh.payday.ui.groups;
 
+import static com.minh.payday.ui.groups.AddExpenseActivity.OWNER_IDENTIFIER;
+
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -151,34 +153,45 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
 
     private void calculateAndDisplayExpenses(List<Expense> expenses) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        // Check if user is logged in
         if (currentUser == null) {
             Log.e(TAG, "User not logged in");
-            // Redirect to LoginActivity
             Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
-            finish(); // Close this activity
-            return; // Stop further execution
+            finish();
+            return;
         }
 
-        // User is logged in, proceed with calculation
-        userRepository.fetchUserById(currentUser.getUid()).observe(this, user -> {
+        final String currentUserId = currentUser.getUid();
+        userRepository.fetchUserById(currentUserId).observe(this, user -> {
             if (user != null) {
-                String currentUserId = user.getUserId();
+                String currentUserName = user.getFirstName();
                 double myTotalExpenses = 0;
                 double totalExpenses = 0;
 
                 for (Expense expense : expenses) {
                     totalExpenses += expense.getAmount();
+                    Log.d(TAG, "Expense: " + expense.getDescription() + ", Amount: " + expense.getAmount());
 
-                    // Check if the special owner identifier is present
-                    if (expense.getMemberAmounts().containsKey("<<OWNER>>")) {
-                        myTotalExpenses += expense.getMemberAmounts().get("<<OWNER>>");
-                    } else if (expense.getMemberAmounts().containsKey(currentUserId)) {
-                        // Check for current user ID in case of registered users
-                        myTotalExpenses += expense.getMemberAmounts().get(currentUserId);
+                    if (expense.getOwnerId().equals(currentUserId)) {
+                        // Check if the expense owner is the current user
+                        if (expense.getMemberAmounts().containsKey(OWNER_IDENTIFIER)) {
+                            // If the owner is part of the split (which should always be the case)
+                            double ownerShare = expense.getMemberAmounts().get(OWNER_IDENTIFIER);
+                            myTotalExpenses += ownerShare;
+                            Log.d(TAG, "Owner expense added: " + ownerShare);
+                        } else {
+                            // If the owner is not part of the split, log the issue
+                            Log.w(TAG, "Owner not found in memberAmounts for expense: " + expense.getDescription());
+                        }
+                    } else if (expense.getMemberAmounts().containsKey(currentUserName)) {
+                        // Check if the current user is a participant (not the owner)
+                        double userShare = expense.getMemberAmounts().get(currentUserName);
+                        myTotalExpenses += userShare;
+                        Log.d(TAG, "Participant expense added: " + userShare);
+                    } else {
+                        // Log if the current user is neither the owner nor a participant
+                        Log.d(TAG, "Current user is not the owner or a participant in expense: " + expense.getDescription());
                     }
                 }
 
