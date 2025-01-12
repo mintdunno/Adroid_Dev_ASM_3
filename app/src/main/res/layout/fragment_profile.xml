@@ -238,12 +238,12 @@
 
         <!-- Change Card Button -->
         <Button
-            android:id="@+id/changeCardButton"
+            android:id="@+id/donationCardButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginEnd="8dp"
-            android:text="@string/change_card"
+            android:text="@string/donation_card"
             android:textColor="@android:color/white"
             android:textStyle="bold"
             android:padding="12dp" />

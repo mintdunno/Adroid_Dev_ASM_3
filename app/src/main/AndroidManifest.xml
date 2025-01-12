@@ -47,6 +47,11 @@
         <activity
             android:name=".ui.groups.AddExpenseActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.profile.DonationDetailsActivity"
+            android:exported="false" />
+
+
     </application>
 
 </manifest>

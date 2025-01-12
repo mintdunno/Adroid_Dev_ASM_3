@@ -1,5 +1,4 @@
 package com.minh.payday.ui.profile;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -56,7 +55,7 @@ public class ProfileFragment extends Fragment {
         phoneNumberTextView = view.findViewById(R.id.phoneNumberTextView);
         ImageView editPhoneNumberButton = view.findViewById(R.id.editPhoneNumberButton);
 
-        Button changeCardButton = view.findViewById(R.id.changeCardButton);
+        Button donationCardButton = view.findViewById(R.id.donationCardButton);
         Button logoutButton = view.findViewById(R.id.logoutButton);
 
         // Get Firebase User and Database Reference
@@ -113,9 +112,13 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        changeCardButton.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Change Card clicked!", Toast.LENGTH_SHORT).show();
+        donationCardButton.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                Intent intent = new Intent(getActivity(), DonationDetailsActivity.class);
+                startActivity(intent);
+            }
         });
+
 
         // Log Out button click
         logoutButton.setOnClickListener(v -> {
