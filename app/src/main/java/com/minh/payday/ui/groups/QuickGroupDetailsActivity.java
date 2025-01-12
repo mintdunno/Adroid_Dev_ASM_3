@@ -27,6 +27,7 @@ import com.minh.payday.data.models.Group;
 import com.minh.payday.data.models.User;
 import com.minh.payday.data.repository.UserRepository;
 import com.minh.payday.ui.MainActivity;
+import com.minh.payday.ui.auth.LoginActivity;
 import com.minh.payday.ui.groups.adapters.ExpensesAdapter;
 
 import java.util.ArrayList;
@@ -149,31 +150,41 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
 
     private void calculateAndDisplayExpenses(List<Expense> expenses) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser != null) {
-            userRepository.fetchUserById(currentUser.getUid()).observe(this, user -> {
-                if (user != null) {
-                    String currentUserName = user.getFirstName();
-                    double myTotalExpenses = 0;
-                    double totalExpenses = 0;
 
-                    for (Expense expense : expenses) {
-                        totalExpenses += expense.getAmount();
-                        if (expense.getPayerId().equals(currentUserName)) {
-                            myTotalExpenses += expense.getAmount();
-                        } else if (expense.getMemberAmounts().containsKey(currentUserName)) {
-                            myTotalExpenses += expense.getMemberAmounts().get(currentUserName);
-                        }
-                    }
-
-                    myExpensesTextView.setText(String.format("$%.2f", myTotalExpenses));
-                    totalExpensesTextView.setText(String.format("$%.2f", totalExpenses));
-                } else {
-                    Log.e(TAG, "Could not fetch current user's name");
-                }
-            });
-        } else {
-            Log.e(TAG, "Current user is null");
+        // Check if user is logged in
+        if (currentUser == null) {
+            Log.e(TAG, "User not logged in");
+            // Redirect to LoginActivity
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish(); // Close this activity
+            return; // Stop further execution
         }
+
+        // User is logged in, proceed with calculation
+        userRepository.fetchUserById(currentUser.getUid()).observe(this, user -> {
+            if (user != null) {
+                String currentUserId = user.getUserId(); // Use userId
+                double myTotalExpenses = 0;
+                double totalExpenses = 0;
+
+                for (Expense expense : expenses) {
+                    totalExpenses += expense.getAmount();
+
+                    // Calculate myTotalExpenses for the current user
+                    if (expense.getMemberAmounts().containsKey(currentUserId)) {
+                        // If the current user is part of the split (they should be)
+                        myTotalExpenses += expense.getMemberAmounts().get(currentUserId);
+                    }
+                }
+
+                myExpensesTextView.setText(String.format("$%.2f", myTotalExpenses));
+                totalExpensesTextView.setText(String.format("$%.2f", totalExpenses));
+            } else {
+                Log.e(TAG, "Could not fetch current user's ID");
+            }
+        });
     }
 
     private void showPopupMenu(View view) {
