@@ -4,8 +4,7 @@ Front end: All things related to group fragment.
 Backend: Group (Firestore), Login And SignUp algoritm (Firebase Auth).
 
 Cao Duy Minh - s3818272
-(Work Pending Assignment)
-
+FrontEnd and BackEnd: Chat Fragments.
 Nguyen Tran Minh Khoi - s3880212:
 Front-end: Profile Page (PFP), Log in, Sign up, Splash Screen, Admin-Donate Page.
 Figma Draft: Version 1.0.
