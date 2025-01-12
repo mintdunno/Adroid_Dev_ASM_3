@@ -32,6 +32,7 @@ import com.minh.payday.ui.groups.adapters.ExpensesAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class QuickGroupDetailsActivity extends AppCompatActivity implements AddMemberDialogFragment.AddMemberDialogListener, ExpensesAdapter.OnItemClickListener {
@@ -165,22 +166,25 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
         // User is logged in, proceed with calculation
         userRepository.fetchUserById(currentUser.getUid()).observe(this, user -> {
             if (user != null) {
-                String currentUserId = user.getUserId(); // Use userId
+                String currentUserId = user.getUserId();
                 double myTotalExpenses = 0;
                 double totalExpenses = 0;
 
                 for (Expense expense : expenses) {
                     totalExpenses += expense.getAmount();
 
-                    // Calculate myTotalExpenses for the current user
-                    if (expense.getMemberAmounts().containsKey(currentUserId)) {
-                        // If the current user is part of the split (they should be)
+                    // Check if the special owner identifier is present
+                    if (expense.getMemberAmounts().containsKey("<<OWNER>>")) {
+                        myTotalExpenses += expense.getMemberAmounts().get("<<OWNER>>");
+                    } else if (expense.getMemberAmounts().containsKey(currentUserId)) {
+                        // Check for current user ID in case of registered users
                         myTotalExpenses += expense.getMemberAmounts().get(currentUserId);
                     }
                 }
 
-                myExpensesTextView.setText(String.format("$%.2f", myTotalExpenses));
-                totalExpensesTextView.setText(String.format("$%.2f", totalExpenses));
+                // Display the calculated amounts
+                myExpensesTextView.setText(String.format(Locale.getDefault(), "$%.2f", myTotalExpenses));
+                totalExpensesTextView.setText(String.format(Locale.getDefault(), "$%.2f", totalExpenses));
             } else {
                 Log.e(TAG, "Could not fetch current user's ID");
             }

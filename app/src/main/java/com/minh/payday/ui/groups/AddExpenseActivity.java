@@ -298,12 +298,16 @@ public class AddExpenseActivity extends AppCompatActivity {
         Map<String, Double> memberAmounts = new HashMap<>();
         if (numMembers > 0) {
             double splitAmount = totalAmount / numMembers;
+            String ownerName = paidBySpinner.getSelectedItem().toString().replace(" (Me)", "");
             for (int i = 0; i < numMembers; i++) {
                 String memberName = memberSplitAdapter.getMemberName(i);
                 if (memberName != null) {
-                    // Remove "(Me)" from the member name if present
-                    String cleanMemberName = memberName.replace(" (Me)", "");
-                    memberAmounts.put(cleanMemberName, splitAmount);
+                    // If memberName is the owner, add a special identifier
+                    if (memberName.equals(ownerName)) {
+                        memberAmounts.put("<<OWNER>>", splitAmount);
+                    } else {
+                        memberAmounts.put(memberName, splitAmount);
+                    }
                 } else {
                     Log.e(TAG, "Member name is null at index: " + i);
                 }
