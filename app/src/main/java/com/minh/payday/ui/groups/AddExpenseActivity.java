@@ -43,7 +43,6 @@ public class AddExpenseActivity extends AppCompatActivity {
     public static final String EXTRA_GROUP_ID = "extra_group_id";
     public static final String OWNER_IDENTIFIER = "<<OWNER>>";
 
-
     private EditText titleEditText;
     private EditText amountEditText;
     private Spinner paidBySpinner;
@@ -59,6 +58,8 @@ public class AddExpenseActivity extends AppCompatActivity {
     private UserRepository userRepository;
     private AddExpenseViewModel viewModel;
     private String groupId;
+    private String ownerId;
+    private List<String> memberIds;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +101,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         // Fetch group members from Firestore using GroupRepository
         groupRepository.getGroupById(groupId).observe(this, group -> {
             if (group != null) {
+                ownerId = group.getOwnerId();
                 fetchUserDataForMembers(group.getMembers(), group.getOwnerId());
             } else {
                 Toast.makeText(this, "Error fetching group details", Toast.LENGTH_SHORT).show();
@@ -161,8 +163,9 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private void fetchUserDataForMembers(List<String> memberIds, String ownerId) {
+        this.memberIds = memberIds;
         List<String> memberNames = new ArrayList<>();
-        List<String> selectedMemberIds = new ArrayList<>(); // List to track selected member IDs
+        List<String> selectedMemberIds = new ArrayList<>();
 
         for (String memberId : memberIds) {
             if (isUserId(memberId)) {
@@ -238,10 +241,7 @@ public class AddExpenseActivity extends AppCompatActivity {
     private void addExpense() {
         String title = titleEditText.getText().toString();
         String amountString = amountEditText.getText().toString();
-        // Get the currently selected item in the spinner
         String paidBy = paidBySpinner.getSelectedItem() != null ? paidBySpinner.getSelectedItem().toString() : "";
-        // Remove the "(Me)" if it's appended to the payer's name
-        paidBy = paidBy.replace(" (Me)", "");
         long timestamp = selectedDate.getTimeInMillis();
         List<String> selectedMemberIds = memberSplitAdapter.getSelectedMemberIds();
 
@@ -260,7 +260,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         }
 
         // Calculate split amount
-        Map<String, Double> memberAmounts = calculateSplit(amount, selectedMemberIds.size());
+        Map<String, Double> memberAmounts = calculateSplit(amount, selectedMemberIds);
 
         // Create a new Expense object
         Expense expense = new Expense();
@@ -281,14 +281,15 @@ public class AddExpenseActivity extends AppCompatActivity {
         }
 
         // Assuming 'paidBy' is the name selected in the spinner, which includes "(Me)" for the owner
-        // Now set the payerId, removing "(Me)" if it's appended
-        expense.setPayerId(paidBy);
+        // Remove "(Me)" to get the actual user ID or name
+        String payerId = paidBy.replace(" (Me)", "");
+        expense.setPayerId(payerId);
 
         // Add the expense to Firestore
         expenseRepository.addOrUpdateExpense(expense)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(AddExpenseActivity.this, "Expense added successfully", Toast.LENGTH_SHORT).show();
-                    finish(); // Close the activity
+                    finish();
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error adding expense", e);
@@ -296,23 +297,21 @@ public class AddExpenseActivity extends AppCompatActivity {
                 });
     }
 
-    private Map<String, Double> calculateSplit(double totalAmount, int numMembers) {
+    private Map<String, Double> calculateSplit(double totalAmount, List<String> selectedMemberIds) {
         Map<String, Double> memberAmounts = new HashMap<>();
-        if (numMembers > 0) {
-            double splitAmount = totalAmount / numMembers;
-            String ownerName = paidBySpinner.getSelectedItem().toString().replace(" (Me)", "");
-            for (int i = 0; i < numMembers; i++) {
-                String memberName = memberSplitAdapter.getMemberName(i);
-                if (memberName != null) {
-                    // If memberName is the owner, add a special identifier
-                    if (memberName.equals(ownerName)) {
-                        memberAmounts.put("<<OWNER>>", splitAmount);
-                    } else {
-                        memberAmounts.put(memberName, splitAmount);
-                    }
-                } else {
-                    Log.e(TAG, "Member name is null at index: " + i);
-                }
+        if (selectedMemberIds.isEmpty()) {
+            return memberAmounts; // Return empty map if no members are selected
+        }
+
+        double splitAmount = totalAmount / selectedMemberIds.size();
+        // Iterate over selected member IDs
+        for (String memberId : selectedMemberIds) {
+            if (memberId.equals(ownerId)) {
+                // If the member ID is the same as the owner ID, use the owner identifier
+                memberAmounts.put(OWNER_IDENTIFIER, splitAmount);
+            } else {
+                // Otherwise, use the member ID
+                memberAmounts.put(memberId, splitAmount);
             }
         }
         return memberAmounts;
