@@ -65,12 +65,15 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
             return;
         }
 
+        // Initialize userRepository first
         userRepository = new UserRepository();
 
         initializeViews();
         setupToolbar();
         setupRecyclerView();
         setupExpenseFab();
+
+        // Now it's safe to call setupViewModel()
         setupViewModel();
     }
 
@@ -105,10 +108,21 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
         addExpenseFab.setOnClickListener(view -> {
             Intent intent = new Intent(QuickGroupDetailsActivity.this, AddExpenseActivity.class);
             intent.putExtra(AddExpenseActivity.EXTRA_GROUP_ID, groupId);
-            startActivity(intent);
+            // Use startActivityForResult or a similar mechanism to get a result back
+            startActivityForResult(intent, ADD_EXPENSE_REQUEST_CODE);
         });
     }
 
+    //add this two method in QuickGroupDetailsActivity
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ADD_EXPENSE_REQUEST_CODE && resultCode == RESULT_OK) {
+            // Expense added successfully, refresh the data
+            viewModel.refreshExpenses(groupId);
+        }
+    }
+    public static final int ADD_EXPENSE_REQUEST_CODE = 1;
     private void setupViewModel() {
         viewModel = new ViewModelProvider(this).get(QuickGroupDetailsViewModel.class);
         viewModel.getGroupDetails(groupId).observe(this, this::updateUIWithGroupDetails);

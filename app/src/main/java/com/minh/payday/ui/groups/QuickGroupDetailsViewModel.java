@@ -97,12 +97,17 @@ public class QuickGroupDetailsViewModel extends ViewModel {
     public LiveData<List<Expense>> getGroupExpenses(String groupId) {
         if (groupExpenses == null) {
             groupExpenses = new MutableLiveData<>();
-            loadGroupExpenses(groupId);
+            loadGroupExpenses(groupId); // Trigger data fetch immediately
         }
         return groupExpenses;
     }
 
+    public void refreshExpenses(String groupId) {
+        loadGroupExpenses(groupId);
+    }
+
     private void loadGroupExpenses(String groupId) {
+        // Use SnapshotListener for real-time updates
         db.collection("expenses")
                 .whereEqualTo("groupId", groupId)
                 .orderBy("timestamp")
