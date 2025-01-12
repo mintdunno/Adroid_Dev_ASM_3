@@ -146,7 +146,7 @@
                 android:id="@+id/myExpensesTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="$150.00"
+                android:text="$0"
                 android:textColor="@color/colorPrimary"
                 android:textSize="18sp" />
         </LinearLayout>
@@ -166,7 +166,7 @@
                 android:id="@+id/totalExpensesTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="$500.00"
+                android:text="$0"
                 android:textColor="@color/colorPrimary"
                 android:textSize="18sp" />
         </LinearLayout>
@@ -176,7 +176,7 @@
         android:id="@+id/expensesRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="60dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:layout_constraintTop_toBottomOf="@id/summaryLayout"
         tools:listitem="@layout/expense_item" />
