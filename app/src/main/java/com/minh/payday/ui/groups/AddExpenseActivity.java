@@ -3,6 +3,7 @@ package com.minh.payday.ui.groups;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -100,6 +101,43 @@ public class AddExpenseActivity extends AppCompatActivity {
         });
 
         addExpenseButton.setOnClickListener(v -> addExpense());
+
+        // Add OnKeyListener to amountEditText
+        amountEditText.setOnKeyListener((v, keyCode, event) -> {
+            if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                    (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                // Update the split amounts in real-time
+                updateSplitAmounts();
+                return true;
+            }
+            return false;
+        });
+    }
+    private void updateSplitAmounts() {
+        String amountString = amountEditText.getText().toString().trim();
+        if (!amountString.isEmpty()) {
+            try {
+                double amount = Double.parseDouble(amountString);
+                int numMembers = memberSplitAdapter.getItemCount();
+
+                if (numMembers > 0) {
+                    double splitAmount = amount / numMembers;
+
+                    // Update the memberAmounts in the adapter
+                    for (int i = 0; i < numMembers; i++) {
+                        memberSplitAdapter.updateMemberAmount(i, splitAmount);
+                    }
+                }
+            } catch (NumberFormatException e) {
+                Log.e(TAG, "Invalid amount format");
+            }
+        } else {
+            // If amount is empty, reset the displayed amounts to 0.00
+            int numMembers = memberSplitAdapter.getItemCount();
+            for (int i = 0; i < numMembers; i++) {
+                memberSplitAdapter.updateMemberAmount(i, 0.00);
+            }
+        }
     }
 
     private void showDatePicker() {

@@ -26,7 +26,7 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
         this.memberAmounts = new ArrayList<>();
         for (int i = 0; i < memberNames.size(); i++) {
             memberCheckBoxes.add(null); // Initialize checkboxes with nulls
-            memberAmounts.add(0.0);    // Initialize amounts with 0.0
+            memberAmounts.add(0.0); // Initialize amounts with 0.0
         }
     }
 
@@ -84,18 +84,6 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
         }
     }
 
-    static class MemberViewHolder extends RecyclerView.ViewHolder {
-        CheckBox memberCheckBox;
-        TextView memberNameTextView;
-        TextView memberAmountTextView;
-
-        public MemberViewHolder(@NonNull View itemView) {
-            super(itemView);
-            memberCheckBox = itemView.findViewById(R.id.memberCheckBox);
-            memberNameTextView = itemView.findViewById(R.id.memberNameTextView);
-            memberAmountTextView = itemView.findViewById(R.id.memberAmountTextView);
-        }
-    }
     public String getMemberName(int position) {
         if (position >= 0 && position < memberNames.size()) {
             return memberNames.get(position);
@@ -116,4 +104,16 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
         notifyDataSetChanged();
     }
 
+    static class MemberViewHolder extends RecyclerView.ViewHolder {
+        CheckBox memberCheckBox;
+        TextView memberNameTextView;
+        TextView memberAmountTextView;
+
+        public MemberViewHolder(@NonNull View itemView) {
+            super(itemView);
+            memberCheckBox = itemView.findViewById(R.id.memberCheckBox);
+            memberNameTextView = itemView.findViewById(R.id.memberNameTextView);
+            memberAmountTextView = itemView.findViewById(R.id.memberAmountTextView);
+        }
+    }
 }

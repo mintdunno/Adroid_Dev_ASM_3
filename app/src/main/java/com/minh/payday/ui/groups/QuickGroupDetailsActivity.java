@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class QuickGroupDetailsActivity extends AppCompatActivity implements AddMemberDialogFragment.AddMemberDialogListener {
+public class QuickGroupDetailsActivity extends AppCompatActivity implements AddMemberDialogFragment.AddMemberDialogListener, ExpensesAdapter.OnItemClickListener {
 
     private static final String TAG = "QuickGroupDetailsActivity";
     public static final String EXTRA_GROUP_ID = "groupId";
@@ -92,7 +92,7 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         ImageButton settingsButton = findViewById(R.id.settingsButton);
         settingsButton.setOnClickListener(v -> showPopupMenu(v));
@@ -101,7 +101,7 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
     private void setupRecyclerView() {
         RecyclerView expensesRecyclerView = findViewById(R.id.expensesRecyclerView);
         expensesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        expensesAdapter = new ExpensesAdapter(new ArrayList<>());
+        expensesAdapter = new ExpensesAdapter(new ArrayList<>(), this); // Now 'this' is valid
         expensesRecyclerView.setAdapter(expensesAdapter);
     }
 
@@ -255,5 +255,12 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemClick(Expense expense) {
+        Intent intent = new Intent(this, ExpenseDetailsActivity.class);
+        intent.putExtra(ExpenseDetailsActivity.EXTRA_EXPENSE_ID, expense.getExpenseId());
+        startActivity(intent);
     }
 }
