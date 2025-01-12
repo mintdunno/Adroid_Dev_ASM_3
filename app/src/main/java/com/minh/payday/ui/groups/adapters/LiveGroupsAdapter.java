@@ -1,5 +1,8 @@
 package com.minh.payday.ui.groups.adapters;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -7,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -20,8 +24,8 @@ import com.minh.payday.ui.groups.QuickGroupDetailsActivity;
 
 import java.util.List;
 
-public class LiveGroupsAdapter extends RecyclerView.Adapter<LiveGroupsAdapter.GroupViewHolder> {
-
+public class LiveGroupsAdapter extends
+        RecyclerView.Adapter<LiveGroupsAdapter.GroupViewHolder> {
     private List<Group> groups;
 
     public LiveGroupsAdapter(List<Group> groups) {
@@ -40,28 +44,33 @@ public class LiveGroupsAdapter extends RecyclerView.Adapter<LiveGroupsAdapter.Gr
     public void onBindViewHolder(@NonNull GroupViewHolder holder, int position) {
         Group group = groups.get(position);
         holder.groupNameTextView.setText(group.getGroupName());
-
         // Set group type text
-        String groupTypeText = group.getGroupType() == Group.GroupType.LIVE
-                ? "Live Group"
-                : "Quick Group";
+        String groupTypeText = group.getGroupType() == Group.GroupType.LIVE ?
+                "Live Group" :
+                "Quick Group";
         holder.groupTypeTextView.setText(groupTypeText);
-
         // Differentiate the appearance based on group type
         if (group.getGroupType() == Group.GroupType.LIVE) {
             // Style for Live Groups
-            holder.groupNameTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.live_group_text_color));
-            holder.groupTypeTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.live_group_text_color));
-            holder.groupIconImageView.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.live_group_icon_color));
+
+            holder.groupNameTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(),
+                    R.color.live_group_text_color));
+            holder.groupTypeTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(),
+                    R.color.live_group_text_color));
+            holder.groupIconImageView.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(),
+                    R.color.live_group_icon_color));
             // Set other Live Group specific styles here
         } else {
             // Style for Quick Groups
-            holder.groupNameTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.quick_group_text_color));
-            holder.groupTypeTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.quick_group_text_color));
-            holder.groupIconImageView.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.quick_group_icon_color));
+
+            holder.groupNameTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(),
+                    R.color.quick_group_text_color));
+            holder.groupTypeTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(),
+                    R.color.quick_group_text_color));
+            holder.groupIconImageView.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(),
+                    R.color.quick_group_icon_color));
             // Set other Quick Group specific styles here
         }
-
         // Set group icon
         if (group.getIconUrl() != null && !group.getIconUrl().isEmpty()) {
             Glide.with(holder.itemView.getContext())
@@ -71,26 +80,50 @@ public class LiveGroupsAdapter extends RecyclerView.Adapter<LiveGroupsAdapter.Gr
         } else {
             holder.groupIconImageView.setImageResource(R.drawable.ic_group_placeholder);
         }
-
         holder.itemView.setOnClickListener(view -> {
             int currentPosition = holder.getAdapterPosition();
             if (currentPosition != RecyclerView.NO_POSITION) {
                 Group currentGroup = groups.get(currentPosition);
-
                 // Determine the type of the group and launch appropriate activity
                 if (currentGroup.getGroupType() == Group.GroupType.LIVE) {
                     // Launch LiveGroupDetailsActivity for LIVE groups
-                    Intent intent = new Intent(holder.itemView.getContext(), LiveGroupDetailsActivity.class);
-                    intent.putExtra(LiveGroupDetailsActivity.EXTRA_GROUP_ID, currentGroup.getGroupId());
+                    Intent intent = new Intent(holder.itemView.getContext(),
+                            LiveGroupDetailsActivity.class);
+                    intent.putExtra(LiveGroupDetailsActivity.EXTRA_GROUP_ID,
+                            currentGroup.getGroupId());
                     holder.itemView.getContext().startActivity(intent);
                 } else {
                     // Launch QuickGroupDetailsActivity for QUICK groups
-                    Intent intent = new Intent(holder.itemView.getContext(), QuickGroupDetailsActivity.class);
-                    intent.putExtra(QuickGroupDetailsActivity.EXTRA_GROUP_ID, currentGroup.getGroupId());
+                    Intent intent = new Intent(holder.itemView.getContext(),
+                            QuickGroupDetailsActivity.class);
+                    intent.putExtra(QuickGroupDetailsActivity.EXTRA_GROUP_ID,
+                            currentGroup.getGroupId());
                     holder.itemView.getContext().startActivity(intent);
                 }
             }
         });
+
+        // Set long-click listener for Live Groups only
+        if (group.getGroupType() == Group.GroupType.LIVE) {
+            holder.itemView.setOnLongClickListener(view -> {
+                int currentPosition = holder.getAdapterPosition();
+                if (currentPosition != RecyclerView.NO_POSITION) {
+                    Group currentGroup = groups.get(currentPosition);
+                    if (currentGroup.getGroupType() == Group.GroupType.LIVE) {
+                        copyRoomCodeToClipboard(holder.itemView.getContext(), currentGroup.getRoomCode());
+                        return true; // Consume the long-click event
+                    }
+                }
+                return false; // Do not consume the event for non-Live groups
+            });
+        }
+    }
+
+    private void copyRoomCodeToClipboard(Context context, String roomCode) {
+        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Room Code", roomCode);
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(context, "Room code copied to clipboard", Toast.LENGTH_SHORT).show();
     }
 
     @Override

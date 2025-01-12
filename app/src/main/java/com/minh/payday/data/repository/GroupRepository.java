@@ -116,7 +116,6 @@ public class GroupRepository {
                 });
     }
 
-    // In GroupRepository.java
     public Task<Void> joinGroup(String roomCode, String userId) {
         return firestore.collection("groups")
                 .whereEqualTo("roomCode", roomCode)
@@ -140,6 +139,31 @@ public class GroupRepository {
                             .update("members", FieldValue.arrayUnion(userId));
                 });
     }
+    public Task<Void> addMemberToQuickGroup(String groupId, String memberName) {
+        return firestore.collection("groups").document(groupId)
+                .update("members", FieldValue.arrayUnion(memberName))
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Member added to group successfully"));
+    }
+    public LiveData<Group> getGroupById(String groupId) {
+        MutableLiveData<Group> groupLiveData = new MutableLiveData<>();
+        firestore.collection("groups").document(groupId)
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null) {
+                        Log.w(TAG, "Listen failed.", e);
+                        groupLiveData.setValue(null);
+                        return;
+                    }
+
+                    if (snapshot != null && snapshot.exists()) {
+                        Group group = snapshot.toObject(Group.class);
+                        groupLiveData.setValue(group);
+                    } else {
+                        Log.d(TAG, "Current data: null");
+                        groupLiveData.setValue(null);
+                    }
+                });
+        return groupLiveData;
+    }
 
     private String generateRoomCode() {
         // Use a combination of uppercase letters and digits
@@ -155,34 +179,4 @@ public class GroupRepository {
 
         return code.toString();
     }
-
-    public Task<Void> addMemberToQuickGroup(String groupId, String memberName) {
-        return firestore.collection("groups").document(groupId)
-                .update("members", FieldValue.arrayUnion(memberName))
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Member added to group successfully"))
-                .addOnFailureListener(e -> Log.w(TAG, "Error adding member to group", e));
-    }
-
-    public LiveData<Group> getGroupById(String groupId) {
-        MutableLiveData<Group> groupLiveData = new MutableLiveData<>();
-        firestore.collection("groups").document(groupId)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document != null && document.exists()) {
-                            Group group = document.toObject(Group.class);
-                            groupLiveData.setValue(group);
-                        } else {
-                            Log.d(TAG, "No such document");
-                            groupLiveData.setValue(null);
-                        }
-                    } else {
-                        Log.d(TAG, "get failed with ", task.getException());
-                        groupLiveData.setValue(null);
-                    }
-                });
-        return groupLiveData;
-    }
-
 }

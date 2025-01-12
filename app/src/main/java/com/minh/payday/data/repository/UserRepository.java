@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserRepository {
-
     private final FirebaseAuth auth;
     private final FirebaseFirestore firestore;
 
@@ -46,10 +45,12 @@ public class UserRepository {
     // ---------------------------------------------------------
     // 3) Create / Update User Document in Firestore
     // ---------------------------------------------------------
-    // Use this after registration to set user details (firstName, lastName, avatarUrl, etc.)
+    // Use this after registration to set user details (firstName, lastName, avatarUrl,
+    // etc.)
     public Task<Void> createOrUpdateUserInFirestore(User user) {
         if (user.getUserId() == null) {
-            // If userId is null, we can't proceed. Usually we get userId from auth.getCurrentUser().getUid()
+            // If userId is null, we can't proceed. Usually we get userId from
+            // auth.getCurrentUser().getUid()
             return Tasks.forException(new Exception("User ID is null."));
         }
         return firestore.collection("users").document(user.getUserId())
@@ -62,18 +63,21 @@ public class UserRepository {
     public LiveData<User> fetchUserById(String userId) {
         MutableLiveData<User> userLiveData = new MutableLiveData<>();
         firestore.collection("users").document(userId)
-                .addSnapshotListener((docSnapshot, e) -> {
-                    if (e != null) {
-                        // Handle error
-                        Log.w(TAG, "Listen failed.", e);
-                        return;
-                    }
-                    if (docSnapshot != null && docSnapshot.exists()) {
-                        User fetchedUser = docSnapshot.toObject(User.class);
-                        userLiveData.setValue(fetchedUser);
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot docSnapshot = task.getResult();
+                        if (docSnapshot != null && docSnapshot.exists()) {
+                            User fetchedUser = docSnapshot.toObject(User.class);
+                            userLiveData.postValue(fetchedUser);
+                        } else {
+                            Log.d(TAG, "User document not found.");
+                            userLiveData.postValue(null);
+                        }
                     } else {
-                        Log.d(TAG, "User document not found.");
-                        userLiveData.setValue(null);
+                        // Handle error
+                        Log.w(TAG, "Listen failed.", task.getException());
+                        userLiveData.postValue(null);
                     }
                 });
         return userLiveData;
@@ -105,5 +109,4 @@ public class UserRepository {
         }
         return null;
     }
-
 }
