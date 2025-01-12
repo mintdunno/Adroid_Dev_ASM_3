@@ -2,6 +2,8 @@ package com.minh.payday.ui.groups;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.ArrayAdapter;
@@ -18,11 +20,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.minh.payday.R;
 import com.minh.payday.data.models.Expense;
 import com.minh.payday.data.models.Group;
 import com.minh.payday.data.repository.ExpenseRepository;
 import com.minh.payday.data.repository.GroupRepository;
+import com.minh.payday.data.repository.UserRepository;
 import com.minh.payday.ui.groups.adapters.MemberSplitAdapter;
 
 import java.text.SimpleDateFormat;
@@ -50,6 +54,7 @@ public class AddExpenseActivity extends AppCompatActivity {
 
     private GroupRepository groupRepository;
     private ExpenseRepository expenseRepository;
+    private UserRepository userRepository;
     private AddExpenseViewModel viewModel;
     private String groupId;
 
@@ -68,6 +73,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(AddExpenseViewModel.class);
         groupRepository = new GroupRepository();
         expenseRepository = new ExpenseRepository();
+        userRepository = new UserRepository();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -86,14 +92,13 @@ public class AddExpenseActivity extends AppCompatActivity {
         dateTextView.setOnClickListener(v -> showDatePicker());
 
         membersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        memberSplitAdapter = new MemberSplitAdapter(new ArrayList<>());
+        memberSplitAdapter = new MemberSplitAdapter(new ArrayList<>(), new ArrayList<>());
         membersRecyclerView.setAdapter(memberSplitAdapter);
 
         // Fetch group members from Firestore using GroupRepository
         groupRepository.getGroupById(groupId).observe(this, group -> {
             if (group != null) {
-                setupPaidBySpinner(group.getMembers());
-                setupMembersRecyclerView(group.getMembers());
+                fetchUserDataForMembers(group.getMembers(), group.getOwnerId());
             } else {
                 Toast.makeText(this, "Error fetching group details", Toast.LENGTH_SHORT).show();
                 finish();
@@ -101,6 +106,23 @@ public class AddExpenseActivity extends AppCompatActivity {
         });
 
         addExpenseButton.setOnClickListener(v -> addExpense());
+
+        amountEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Not used
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Not used
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                updateSplitAmounts();
+            }
+        });
 
         // Add OnKeyListener to amountEditText
         amountEditText.setOnKeyListener((v, keyCode, event) -> {
@@ -113,31 +135,63 @@ public class AddExpenseActivity extends AppCompatActivity {
             return false;
         });
     }
-    private void updateSplitAmounts() {
+
+    public void updateSplitAmounts() {
         String amountString = amountEditText.getText().toString().trim();
-        if (!amountString.isEmpty()) {
+        List<String> selectedMembers = memberSplitAdapter.getSelectedMembers();
+        if (!amountString.isEmpty() && !selectedMembers.isEmpty()) {
             try {
                 double amount = Double.parseDouble(amountString);
-                int numMembers = memberSplitAdapter.getItemCount();
+                double splitAmount = amount / selectedMembers.size();
 
-                if (numMembers > 0) {
-                    double splitAmount = amount / numMembers;
-
-                    // Update the memberAmounts in the adapter
-                    for (int i = 0; i < numMembers; i++) {
-                        memberSplitAdapter.updateMemberAmount(i, splitAmount);
-                    }
+                for (int i = 0; i < memberSplitAdapter.getItemCount(); i++) {
+                    memberSplitAdapter.updateMemberAmount(i, selectedMembers.contains(memberSplitAdapter.getMemberId(i)) ? splitAmount : 0.00);
                 }
             } catch (NumberFormatException e) {
-                Log.e(TAG, "Invalid amount format");
+                Log.e(TAG, "Invalid amount format", e);
+                Toast.makeText(this, "Invalid amount format", Toast.LENGTH_SHORT).show();
             }
         } else {
-            // If amount is empty, reset the displayed amounts to 0.00
-            int numMembers = memberSplitAdapter.getItemCount();
-            for (int i = 0; i < numMembers; i++) {
+            for (int i = 0; i < memberSplitAdapter.getItemCount(); i++) {
                 memberSplitAdapter.updateMemberAmount(i, 0.00);
             }
         }
+    }
+
+    private void fetchUserDataForMembers(List<String> memberIds, String ownerId) {
+        List<String> memberNames = new ArrayList<>();
+        List<String> selectedMemberIds = new ArrayList<>(); // List to track selected member IDs
+
+        for (String memberId : memberIds) {
+            if (isUserId(memberId)) {
+                userRepository.fetchUserById(memberId).observe(this, user -> {
+                    if (user != null) {
+                        String memberName = user.getFirstName();
+                        if (memberId.equals(ownerId)) {
+                            memberName += " (Me)";
+                        }
+                        memberNames.add(memberName);
+                        selectedMemberIds.add(memberId);
+                    } else {
+                        memberNames.add("Unknown User");
+                    }
+                    if (memberNames.size() == memberIds.size()) {
+                        setupPaidBySpinner(memberNames);
+                        setupMembersRecyclerView(memberIds, memberNames, selectedMemberIds);
+                    }
+                });
+            } else {
+                memberNames.add(memberId);
+                if (memberNames.size() == memberIds.size()) {
+                    setupPaidBySpinner(memberNames);
+                    setupMembersRecyclerView(memberIds, memberNames, selectedMemberIds);
+                }
+            }
+        }
+    }
+
+    private boolean isUserId(String id) {
+        return id.length() == 28;
     }
 
     private void showDatePicker() {
@@ -162,9 +216,9 @@ public class AddExpenseActivity extends AppCompatActivity {
         dateTextView.setText(sdf.format(selectedDate.getTime()));
     }
 
-    private void setupPaidBySpinner(List<String> members) {
-        if (members != null && !members.isEmpty()) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, members);
+    private void setupPaidBySpinner(List<String> memberNames) {
+        if (memberNames != null && !memberNames.isEmpty()) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, memberNames);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             paidBySpinner.setAdapter(adapter);
         } else {
@@ -172,40 +226,61 @@ public class AddExpenseActivity extends AppCompatActivity {
         }
     }
 
-    private void setupMembersRecyclerView(List<String> members) {
-        if (members != null && !members.isEmpty()) {
-            memberSplitAdapter = new MemberSplitAdapter(members);
-            membersRecyclerView.setAdapter(memberSplitAdapter);
-        } else {
-            Log.e(TAG, "Members list for RecyclerView is null or empty");
-        }
+    private void setupMembersRecyclerView(List<String> memberIds, List<String> memberNames, List<String> selectedMemberIds) {
+        memberSplitAdapter = new MemberSplitAdapter(memberIds, memberNames);
+        membersRecyclerView.setAdapter(memberSplitAdapter);
+        memberSplitAdapter.selectAllMembers();
+        updateSplitAmounts();
     }
 
     private void addExpense() {
         String title = titleEditText.getText().toString();
-        double amount = Double.parseDouble(amountEditText.getText().toString());
-        String paidBy = paidBySpinner.getSelectedItem().toString();
+        String amountString = amountEditText.getText().toString();
+        // Get the currently selected item in the spinner
+        String paidBy = paidBySpinner.getSelectedItem() != null ? paidBySpinner.getSelectedItem().toString() : "";
+        // Remove the "(Me)" if it's appended to the payer's name
+        paidBy = paidBy.replace(" (Me)", "");
         long timestamp = selectedDate.getTimeInMillis();
-        List<String> selectedMembers = memberSplitAdapter.getSelectedMembers();
+        List<String> selectedMemberIds = memberSplitAdapter.getSelectedMemberIds();
 
         // Basic input validation
-        if (title.isEmpty() || paidBy.isEmpty() || selectedMembers.isEmpty()) {
+        if (title.isEmpty() || amountString.isEmpty() || paidBy.isEmpty() || selectedMemberIds.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        double amount;
+        try {
+            amount = Double.parseDouble(amountString);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Invalid amount format", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Calculate split amount
-        Map<String, Double> memberAmounts = calculateSplit(amount, selectedMembers.size());
+        Map<String, Double> memberAmounts = calculateSplit(amount, selectedMemberIds.size());
 
         // Create a new Expense object
         Expense expense = new Expense();
         expense.setGroupId(groupId);
         expense.setAmount(amount);
         expense.setDescription(title);
-        expense.setPayerId(paidBy);
         expense.setTimestamp(timestamp);
-        expense.setParticipants(selectedMembers);
-        expense.setMemberAmounts(memberAmounts); // Set the calculated member amounts
+        expense.setParticipants(selectedMemberIds);
+        expense.setMemberAmounts(memberAmounts);
+
+        // Set the ownerId to the current user's ID
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            expense.setOwnerId(currentUser.getUid());
+        } else {
+            // Handle the case where the user is not logged in (maybe set ownerId to paidBy for Quick Groups)
+            expense.setOwnerId(paidBy);
+        }
+
+        // Assuming 'paidBy' is the name selected in the spinner, which includes "(Me)" for the owner
+        // Now set the payerId, removing "(Me)" if it's appended
+        expense.setPayerId(paidBy);
 
         // Add the expense to Firestore
         expenseRepository.addOrUpdateExpense(expense)
@@ -224,10 +299,11 @@ public class AddExpenseActivity extends AppCompatActivity {
         if (numMembers > 0) {
             double splitAmount = totalAmount / numMembers;
             for (int i = 0; i < numMembers; i++) {
-                // Use the member name as the key
                 String memberName = memberSplitAdapter.getMemberName(i);
                 if (memberName != null) {
-                    memberAmounts.put(memberName, splitAmount);
+                    // Remove "(Me)" from the member name if present
+                    String cleanMemberName = memberName.replace(" (Me)", "");
+                    memberAmounts.put(cleanMemberName, splitAmount);
                 } else {
                     Log.e(TAG, "Member name is null at index: " + i);
                 }

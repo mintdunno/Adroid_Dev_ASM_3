@@ -16,6 +16,7 @@ public class Expense implements Serializable {
     private long timestamp; // Timestamp of when the expense was added
     private String receiptUrl; // Optional URL to a receipt image
     private Map<String, Double> memberAmounts; // Map of member names to amounts owed
+    private String ownerId; // Add ownerId field
 
     // Required empty constructor for Firestore
     public Expense() {
@@ -37,7 +38,15 @@ public class Expense implements Serializable {
         this.memberAmounts = memberAmounts;
     }
 
-    // Getters and Setters
+
+    // Add getter for ownerId
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
 
     public String getExpenseId() {
         return expenseId;
@@ -79,20 +88,20 @@ public class Expense implements Serializable {
         this.payerId = payerId;
     }
 
-    public List<String> getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(List<String> participants) {
-        this.participants = participants;
-    }
-
     public String getCategory() {
         return category;
     }
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public List<String> getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(List<String> participants) {
+        this.participants = participants;
     }
 
     public long getTimestamp() {
@@ -117,21 +126,5 @@ public class Expense implements Serializable {
 
     public void setMemberAmounts(Map<String, Double> memberAmounts) {
         this.memberAmounts = memberAmounts;
-    }
-
-    // Convert to Map for Firestore
-    public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("expenseId", expenseId);
-        map.put("groupId", groupId);
-        map.put("amount", amount);
-        map.put("description", description);
-        map.put("payerId", payerId);
-        map.put("participants", participants);
-        map.put("category", category);
-        map.put("timestamp", timestamp);
-        map.put("receiptUrl", receiptUrl);
-        map.put("memberAmounts", memberAmounts); // Store the member amounts
-        return map;
     }
 }

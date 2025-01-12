@@ -1,4 +1,3 @@
-//update ParticipantAdapter
 package com.minh.payday.ui.groups.adapters;
 
 import android.view.LayoutInflater;
@@ -48,21 +47,15 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
     @Override
     public void onBindViewHolder(@NonNull ParticipantViewHolder holder, int position) {
         ParticipantItem item = participantItems.get(position);
-
-        if (item.isUser()) {
-            User participant = item.getUser();
-            holder.participantNameTextView.setText(participant.getFirstName());
-            if (participant.getUserId().equals(currentUserId)) {
-                holder.itemView.setBackgroundResource(R.drawable.rounded_background);
-            } else {
-                holder.itemView.setBackgroundResource(R.drawable.rounded_background_light_orange);
-            }
-        } else {
-            holder.participantNameTextView.setText(item.getParticipantId()); // Set the name directly
-            holder.itemView.setBackgroundResource(R.drawable.rounded_background_light_orange); // Default background for non-users
-        }
-
+        holder.participantNameTextView.setText(item.getDisplayName());
         holder.participantAmountTextView.setText(String.format(Locale.getDefault(), "$%.2f", item.getAmount()));
+
+        // Set background resource based on whether the item is for the current user
+        if (item.getParticipantId().equals(currentUserId)) {
+            holder.itemView.setBackgroundResource(R.drawable.rounded_background);
+        } else {
+            holder.itemView.setBackgroundResource(R.drawable.rounded_background_light_orange);
+        }
     }
 
     @Override
