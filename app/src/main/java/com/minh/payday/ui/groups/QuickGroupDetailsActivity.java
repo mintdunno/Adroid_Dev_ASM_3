@@ -165,33 +165,24 @@ public class QuickGroupDetailsActivity extends AppCompatActivity implements AddM
         final String currentUserId = currentUser.getUid();
         userRepository.fetchUserById(currentUserId).observe(this, user -> {
             if (user != null) {
-                String currentUserName = user.getFirstName();
                 double myTotalExpenses = 0;
                 double totalExpenses = 0;
 
                 for (Expense expense : expenses) {
                     totalExpenses += expense.getAmount();
-                    Log.d(TAG, "Expense: " + expense.getDescription() + ", Amount: " + expense.getAmount());
 
-                    if (expense.getOwnerId().equals(currentUserId)) {
-                        // Check if the expense owner is the current user
-                        if (expense.getMemberAmounts().containsKey(OWNER_IDENTIFIER)) {
-                            // If the owner is part of the split (which should always be the case)
-                            double ownerShare = expense.getMemberAmounts().get(OWNER_IDENTIFIER);
-                            myTotalExpenses += ownerShare;
-                            Log.d(TAG, "Owner expense added: " + ownerShare);
-                        } else {
-                            // If the owner is not part of the split, log the issue
-                            Log.w(TAG, "Owner not found in memberAmounts for expense: " + expense.getDescription());
+                    // Check if the expense was made in the current group
+                    if (groupId.equals(expense.getGroupId())) {
+                        if (expense.getOwnerId().equals(currentUserId)) {
+                            // If the current user is the owner, add the owner's share
+                            Double ownerAmount = expense.getMemberAmounts().get(OWNER_IDENTIFIER);
+                            if (ownerAmount != null) {
+                                myTotalExpenses += ownerAmount;
+                            }
+                        } else if (expense.getMemberAmounts().containsKey(currentUserId)) {
+                            // If the current user is a participant, add their share
+                            myTotalExpenses += expense.getMemberAmounts().get(currentUserId);
                         }
-                    } else if (expense.getMemberAmounts().containsKey(currentUserName)) {
-                        // Check if the current user is a participant (not the owner)
-                        double userShare = expense.getMemberAmounts().get(currentUserName);
-                        myTotalExpenses += userShare;
-                        Log.d(TAG, "Participant expense added: " + userShare);
-                    } else {
-                        // Log if the current user is neither the owner nor a participant
-                        Log.d(TAG, "Current user is not the owner or a participant in expense: " + expense.getDescription());
                     }
                 }
 
