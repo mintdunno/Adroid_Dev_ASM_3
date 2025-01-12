@@ -41,6 +41,8 @@ public class AddExpenseActivity extends AppCompatActivity {
 
     private static final String TAG = "AddExpenseActivity";
     public static final String EXTRA_GROUP_ID = "extra_group_id";
+    public static final String OWNER_IDENTIFIER = "<<OWNER>>";
+
 
     private EditText titleEditText;
     private EditText amountEditText;
