@@ -131,53 +131,63 @@ public class ExpenseDetailsActivity extends AppCompatActivity {
     }
 
     // Method to check if an ID is a user ID
-    private boolean isUserId(String id) {
-        // Implement logic to check if the ID is a user ID or a guest identifier
-        // For example, check the format or length of the ID
-        return id.length() == 28; // Assuming user IDs are 28 characters long
+    private boolean isUserId(String idOrName) {
+        // Implement your logic to distinguish user IDs from names.
+        // This is just a placeholder, adapt it to your ID format.
+        return idOrName.length() == 28; // Assuming user IDs are 28 characters long
     }
 
     private void setupParticipantsRecyclerView(List<String> participantIds, Map<String, Double> memberAmounts, FirebaseUser currentUser) {
-        if (participantIds == null || participantIds.isEmpty()) {
-            Log.e(TAG, "Participant IDs list is null or empty");
+        if (participantIds == null || participantIds.isEmpty() || memberAmounts == null) {
+            Log.e(TAG, "Participant IDs list or memberAmounts is null or empty");
             return;
         }
 
-        // Clear the list before adding new items
         participantItems.clear();
 
         for (String participantId : participantIds) {
             Log.d(TAG, "Processing participant ID: " + participantId);
-            // Check if the participant is the current user
-            if (isCurrentUser(participantId, currentUser)) {
-                Log.d(TAG, "Fetching data for current user: " + participantId);
-                fetchAndAddCurrentUser(participantItems, memberAmounts, participantIds.size());
-            } else if (isUserId(participantId)) {
-                Log.d(TAG, "Fetching data for user: " + participantId);
-                // Handle other registered users
+
+            if (isUserId(participantId)) {
+                // It's a real user ID, fetch user data
                 fetchAndAddUser(participantItems, memberAmounts, participantIds.size(), participantId);
             } else {
-                // Handle guest participants
-                Log.d(TAG, "Adding guest participant: " + participantId);
+                // It's a cloned member (name), add directly
                 addGuestParticipant(participantItems, participantId, memberAmounts, participantIds.size());
             }
         }
 
-        // Update the adapter after processing all participants
         checkAndUpdateAdapter(participantItems, participantIds.size());
     }
-    private void fetchAndAddUser(List<ParticipantItem> participantItems, Map<String, Double> memberAmounts, int totalParticipants, String participantId) {
-        userRepository.fetchUserById(participantId).observe(this, user -> {
-            if (user != null) {
-                Log.d(TAG, "Fetched user: " + user.getFirstName());
-                // Use user ID as participant ID
-                double amount = memberAmounts.getOrDefault(participantId, 0.00);
-                participantItems.add(new ParticipantItem(participantId, user.getFirstName(), amount));
-                checkAndUpdateAdapter(participantItems, totalParticipants);
-            } else {
-                Log.e(TAG, "User data is null for participant ID: " + participantId);
-            }
-        });
+    private void fetchAndAddUser(List<ParticipantItem> participantItems, Map<String, Double> memberAmounts, int totalParticipants, String participantIdOrName) {
+        if (isUserId(participantIdOrName)) {
+            // It's a real user ID
+            userRepository.fetchUserById(participantIdOrName).observe(this, user -> {
+                if (user != null) {
+                    Log.d(TAG, "Fetched user: " + user.getFirstName());
+                    double amount = memberAmounts.getOrDefault(participantIdOrName, 0.00);
+
+                    // Check if it's the current user
+                    if (isCurrentUser(participantIdOrName, FirebaseAuth.getInstance().getCurrentUser())) {
+                        participantItems.add(new ParticipantItem(participantIdOrName, user.getFirstName() + " (Me)", amount));
+                    } else {
+                        participantItems.add(new ParticipantItem(participantIdOrName, user.getFirstName(), amount));
+                    }
+
+                    checkAndUpdateAdapter(participantItems, totalParticipants);
+                } else {
+                    Log.e(TAG, "User data is null for participant ID: " + participantIdOrName);
+                    // Handle cases where user data is not found, e.g., add a placeholder
+                    participantItems.add(new ParticipantItem(participantIdOrName, "Unknown User", memberAmounts.getOrDefault(participantIdOrName, 0.00)));
+                    checkAndUpdateAdapter(participantItems, totalParticipants);
+                }
+            });
+        } else {
+            // It's a cloned member (name), add directly
+            double amount = memberAmounts.getOrDefault(participantIdOrName, 0.00);
+            participantItems.add(new ParticipantItem(participantIdOrName, participantIdOrName, amount));
+            checkAndUpdateAdapter(participantItems, totalParticipants);
+        }
     }
 
     private void addGuestParticipant(List<ParticipantItem> participantItems, String participantId, Map<String, Double> memberAmounts, int totalParticipants) {
@@ -187,8 +197,12 @@ public class ExpenseDetailsActivity extends AppCompatActivity {
         checkAndUpdateAdapter(participantItems, totalParticipants);
     }
 
+    //Update isCurrentUser function to avoid crash
     private boolean isCurrentUser(String participantId, FirebaseUser currentUser) {
-        return currentUser != null && participantId.equals(currentUser.getUid());
+        if (currentUser == null) {
+            return false;
+        }
+        return participantId.equals(currentUser.getUid());
     }
 
     private void fetchAndAddCurrentUser(List<ParticipantItem> participantItems, Map<String, Double> memberAmounts, int totalParticipants) {
