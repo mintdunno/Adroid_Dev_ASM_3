@@ -51,6 +51,8 @@ public class LiveGroupDetailsActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
 
         groupNameTextView = findViewById(R.id.groupNameTextView);
         groupDateTextView = findViewById(R.id.groupDateTextView);
@@ -72,5 +74,10 @@ public class LiveGroupDetailsActivity extends AppCompatActivity {
                 Toast.makeText(this, "Error loading group details", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }

@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 public class AddExpenseActivity extends AppCompatActivity {
 
@@ -80,9 +81,9 @@ public class AddExpenseActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         titleEditText = findViewById(R.id.titleEditText);
         amountEditText = findViewById(R.id.amountEditText);
@@ -315,5 +316,11 @@ public class AddExpenseActivity extends AppCompatActivity {
             }
         }
         return memberAmounts;
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }
