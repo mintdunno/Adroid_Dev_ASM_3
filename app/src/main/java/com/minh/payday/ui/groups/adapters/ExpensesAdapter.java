@@ -1,5 +1,7 @@
 package com.minh.payday.ui.groups.adapters;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.minh.payday.R;
 import com.minh.payday.data.models.Expense;
+import com.minh.payday.ui.groups.ExpenseDetailsActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,9 +23,15 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.Expens
 
     private List<Expense> expenses;
     private static final String DATE_FORMAT = "dd/MM/yyyy";
+    private OnItemClickListener listener;
 
-    public ExpensesAdapter(List<Expense> expenses) {
+    public interface OnItemClickListener {
+        void onItemClick(Expense expense);
+    }
+
+    public ExpensesAdapter(List<Expense> expenses, OnItemClickListener listener) {
         this.expenses = expenses;
+        this.listener = listener;
     }
 
     @NonNull
@@ -35,13 +44,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.Expens
     @Override
     public void onBindViewHolder(@NonNull ExpenseViewHolder holder, int position) {
         Expense expense = expenses.get(position);
-        holder.expenseNameTextView.setText(expense.getDescription());
-        holder.expenseAmountTextView.setText(String.format("$%.2f", expense.getAmount()));
-        holder.paidByTextView.setText("Paid by " + expense.getPayerId());
-
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
-        String formattedDate = sdf.format(new Date(expense.getTimestamp()));
-        holder.dateTextView.setText(formattedDate);
+        holder.bind(expense, listener);
     }
 
     @Override
@@ -66,6 +69,21 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.Expens
             expenseAmountTextView = itemView.findViewById(R.id.expenseAmountTextView);
             paidByTextView = itemView.findViewById(R.id.paidByTextView);
             dateTextView = itemView.findViewById(R.id.dateTextView);
+        }
+
+        void bind(final Expense expense, final OnItemClickListener listener) {
+            expenseNameTextView.setText(expense.getDescription());
+            expenseAmountTextView.setText(String.format("$%.2f", expense.getAmount()));
+            paidByTextView.setText("Paid by " + expense.getPayerId());
+            SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
+            String formattedDate = sdf.format(new Date(expense.getTimestamp()));
+            dateTextView.setText(formattedDate);
+
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onItemClick(expense);
+                }
+            });
         }
     }
 }

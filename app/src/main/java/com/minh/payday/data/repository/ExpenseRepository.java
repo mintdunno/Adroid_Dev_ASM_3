@@ -1,8 +1,13 @@
 package com.minh.payday.data.repository;
 
+import static android.content.ContentValues.TAG;
+
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.minh.payday.data.models.Expense;
@@ -52,6 +57,27 @@ public class ExpenseRepository {
                     expensesLiveData.setValue(expenseList);
                 });
         return expensesLiveData;
+    }
+
+    public LiveData<Expense> getExpenseById(String expenseId) {
+        MutableLiveData<Expense> data = new MutableLiveData<>();
+        firestore.collection("expenses").document(expenseId).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            Expense expense = document.toObject(Expense.class);
+                            data.setValue(expense);
+                        } else {
+                            Log.d(TAG, "No such document");
+                            data.setValue(null);
+                        }
+                    } else {
+                        Log.d(TAG, "get failed with ", task.getException());
+                        data.setValue(null);
+                    }
+                });
+        return data;
     }
 
 }

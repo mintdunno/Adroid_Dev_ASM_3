@@ -59,8 +59,8 @@ public class LiveGroupDetailsActivity extends AppCompatActivity {
 
         RecyclerView expensesRecyclerView = findViewById(R.id.expensesRecyclerView);
         expensesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        ExpensesAdapter expensesAdapter = new ExpensesAdapter(new ArrayList<>());
-        expensesRecyclerView.setAdapter(expensesAdapter);
+//        ExpensesAdapter expensesAdapter = new ExpensesAdapter(new ArrayList<>());
+//        expensesRecyclerView.setAdapter(expensesAdapter);
 
         // Observe LiveData and update UI
         viewModel.getGroupDetails(groupId).observe(this, group -> {

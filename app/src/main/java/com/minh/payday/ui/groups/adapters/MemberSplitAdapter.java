@@ -10,23 +10,30 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.minh.payday.R;
+import com.minh.payday.ui.groups.AddExpenseActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.MemberViewHolder> {
 
+    private List<String> memberIds;
     private List<String> memberNames;
     private List<CheckBox> memberCheckBoxes;
-    private List<Double> memberAmounts; // List to store amounts for each member
+    private List<Double> memberAmounts;
+    private List<String> selectedMemberIds;
 
-    public MemberSplitAdapter(List<String> memberNames) {
+    public MemberSplitAdapter(List<String> memberIds, List<String> memberNames) {
+        this.memberIds = memberIds;
         this.memberNames = memberNames;
         this.memberCheckBoxes = new ArrayList<>();
         this.memberAmounts = new ArrayList<>();
+        this.selectedMemberIds = new ArrayList<>();
         for (int i = 0; i < memberNames.size(); i++) {
-            memberCheckBoxes.add(null); // Initialize checkboxes with nulls
-            memberAmounts.add(0.0);    // Initialize amounts with 0.0
+            memberCheckBoxes.add(null);
+            memberAmounts.add(0.0);
+            // Initially, all members are selected
+            this.selectedMemberIds.add(memberIds.get(i));
         }
     }
 
@@ -41,14 +48,23 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
     public void onBindViewHolder(@NonNull MemberViewHolder holder, int position) {
         String memberName = memberNames.get(position);
         holder.memberNameTextView.setText(memberName);
-        holder.memberCheckBox.setChecked(true); // Set initial state as checked
+        holder.memberCheckBox.setChecked(selectedMemberIds.contains(memberIds.get(position)));
 
-        // Keep track of checkboxes
-        if (memberCheckBoxes.size() > position) {
-            memberCheckBoxes.set(position, holder.memberCheckBox);
-        }
+        holder.memberCheckBox.setOnCheckedChangeListener(null);
+        holder.memberCheckBox.setChecked(selectedMemberIds.contains(memberIds.get(position)));
+        holder.memberCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                if (!selectedMemberIds.contains(memberIds.get(position))) {
+                    selectedMemberIds.add(memberIds.get(position));
+                }
+            } else {
+                selectedMemberIds.remove(memberIds.get(position));
+            }
+            // You might want to update the split amounts here
+            // Call a method in AddExpenseActivity to recalculate and update amounts
+            ((AddExpenseActivity) holder.itemView.getContext()).updateSplitAmounts();
+        });
 
-        // Set the amount for each member
         if (memberAmounts.size() > position) {
             holder.memberAmountTextView.setText(String.format("$%.2f", memberAmounts.get(position)));
         }
@@ -67,21 +83,33 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
     }
 
     public List<String> getSelectedMembers() {
-        List<String> selectedMembers = new ArrayList<>();
-        for (int i = 0; i < memberNames.size(); i++) {
-            if (memberCheckBoxes.get(i) != null && memberCheckBoxes.get(i).isChecked()) {
-                selectedMembers.add(memberNames.get(i));
-            }
-        }
-        return selectedMembers;
+        return selectedMemberIds;
     }
 
-    public void clearSelectedMembers() {
-        for (CheckBox checkBox : memberCheckBoxes) {
-            if (checkBox != null) {
-                checkBox.setChecked(false);
-            }
+    public void selectAllMembers() {
+        selectedMemberIds.clear();
+        for (String id : memberIds) {
+            selectedMemberIds.add(id);
         }
+        notifyDataSetChanged();
+    }
+
+    public String getMemberName(int position) {
+        if (position >= 0 && position < memberNames.size()) {
+            return memberNames.get(position);
+        }
+        return null;
+    }
+
+    public String getMemberId(int position) {
+        if (position >= 0 && position < memberIds.size()) {
+            return memberIds.get(position);
+        }
+        return null;
+    }
+
+    public List<String> getSelectedMemberIds() {
+        return selectedMemberIds;
     }
 
     static class MemberViewHolder extends RecyclerView.ViewHolder {
@@ -96,24 +124,4 @@ public class MemberSplitAdapter extends RecyclerView.Adapter<MemberSplitAdapter.
             memberAmountTextView = itemView.findViewById(R.id.memberAmountTextView);
         }
     }
-    public String getMemberName(int position) {
-        if (position >= 0 && position < memberNames.size()) {
-            return memberNames.get(position);
-        }
-        return null;
-    }
-
-    // Method to update member names
-    public void updateMemberNames(List<String> newMemberNames) {
-        this.memberNames.clear();
-        this.memberNames.addAll(newMemberNames);
-        this.memberCheckBoxes.clear();
-        this.memberAmounts.clear();
-        for (int i = 0; i < memberNames.size(); i++) {
-            memberCheckBoxes.add(null);
-            memberAmounts.add(0.0);
-        }
-        notifyDataSetChanged();
-    }
-
 }

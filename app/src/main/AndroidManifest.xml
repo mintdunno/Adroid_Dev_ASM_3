@@ -48,6 +48,9 @@
         <activity
             android:name=".ui.groups.AddExpenseActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.groups.ExpenseDetailsActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
