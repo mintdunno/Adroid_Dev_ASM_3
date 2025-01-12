@@ -40,6 +40,7 @@ public class ExpenseDetailsActivity extends AppCompatActivity {
     private LinearLayout payerInfoLayout;
     private ExpenseRepository expenseRepository;
     private UserRepository userRepository;
+    private ParticipantAdapter participantAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -112,7 +113,6 @@ public class ExpenseDetailsActivity extends AppCompatActivity {
             }
         });
     }
-
     private void setupParticipantsRecyclerView(List<String> participantIds, Map<String, Double> memberAmounts) {
         if (participantIds == null || participantIds.isEmpty()) {
             Log.e(TAG, "Participant IDs list is null or empty");
@@ -125,17 +125,14 @@ public class ExpenseDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        List<ParticipantItem> participantItems = new ArrayList<>();
+        participantAdapter = new ParticipantAdapter(new ArrayList<>(), currentUser.getUid());
+        participantsRecyclerView.setAdapter(participantAdapter);
+
         for (String participantId : participantIds) {
             userRepository.fetchUserById(participantId).observe(this, user -> {
                 if (user != null) {
-                    double amount = memberAmounts.getOrDefault(user.getUserId(), 0.00);
-                    participantItems.add(new ParticipantItem(user, amount));
-
-                    if (participantItems.size() == participantIds.size()) {
-                        ParticipantAdapter adapter = new ParticipantAdapter(participantItems, currentUser.getUid());
-                        participantsRecyclerView.setAdapter(adapter);
-                    }
+                    double amount = memberAmounts.getOrDefault(participantId, 0.00);
+                    participantAdapter.addParticipant(new ParticipantItem(user, amount));
                 } else {
                     Log.e(TAG, "User data is null for participant ID: " + participantId);
                 }

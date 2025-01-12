@@ -53,15 +53,17 @@
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_marginBottom="8dp"
-                android:src="@drawable/ic_money" /> <TextView
-            android:id="@+id/expenseTitleTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:text="Expense Title"
-            android:textColor="@color/black"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+                android:src="@drawable/ic_money" />
+
+            <TextView
+                android:id="@+id/expenseTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="Expense Title"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/expenseDateTextView"
@@ -93,28 +95,30 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginEnd="12dp"
-                android:src="@drawable/ic_user_avatar" /> <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+                android:src="@drawable/ic_user_avatar" />
 
-            <TextView
-                android:id="@+id/payerNameTextView"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Payer Name"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/payerSubtitleTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Me"
-                android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/payerNameTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Payer Name"
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/payerSubtitleTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Me"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/payerAmountTextView"

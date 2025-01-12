@@ -26,6 +26,11 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         this.currentUserId = currentUserId;
     }
 
+    public void addParticipant(ParticipantItem participant) {
+        participantItems.add(participant);
+        notifyItemInserted(participantItems.size() - 1);
+    }
+
     @NonNull
     @Override
     public ParticipantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
