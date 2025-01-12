@@ -66,7 +66,10 @@ public class ExpenseDetailsActivity extends AppCompatActivity {
         expenseRepository = new ExpenseRepository();
         userRepository = new UserRepository();
 
+        // Set up RecyclerView and Adapter
+        participantAdapter = new ParticipantAdapter(new ArrayList<>(), ""); // Initialize with empty list
         participantsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        participantsRecyclerView.setAdapter(participantAdapter);
 
         String expenseId = getIntent().getStringExtra(EXTRA_EXPENSE_ID);
         if (expenseId != null) {
@@ -95,51 +98,90 @@ public class ExpenseDetailsActivity extends AppCompatActivity {
 
                 // Assuming the payer is also a participant
                 if (expense.getPayerId() != null) {
-                    userRepository.fetchUserById(expense.getPayerId()).observe(this, payer -> {
-                        if (payer != null) {
-                            payerNameTextView.setText(payer.getFirstName());
-                            if (payer.getUserId().equals(currentUser.getUid())) {
-                                payerSubtitleTextView.setText("Me");
-                                payerInfoLayout.setBackgroundResource(R.drawable.rounded_background);
-                            } else {
-                                payerSubtitleTextView.setText("");
-                                payerInfoLayout.setBackgroundResource(R.drawable.rounded_background_light_orange);
+                    // Fetch user data only if the payer ID is a user ID, otherwise treat as a guest
+                    if (isUserId(expense.getPayerId())) {
+                        userRepository.fetchUserById(expense.getPayerId()).observe(this, payer -> {
+                            if (payer != null) {
+                                payerNameTextView.setText(payer.getFirstName());
+                                if (payer.getUserId().equals(currentUser.getUid())) {
+                                    payerSubtitleTextView.setText("Me");
+                                    payerInfoLayout.setBackgroundResource(R.drawable.rounded_background);
+                                } else {
+                                    payerSubtitleTextView.setText("");
+                                    payerInfoLayout.setBackgroundResource(R.drawable.rounded_background_light_orange);
+                                }
+                                payerAmountTextView.setText(String.format(Locale.getDefault(), "$%.2f", expense.getAmount()));
                             }
-                            payerAmountTextView.setText(String.format(Locale.getDefault(), "$%.2f", expense.getAmount()));
-                        }
-                    });
+                        });
+                    } else {
+                        // Treat the payer as a guest
+                        payerNameTextView.setText(expense.getPayerId());
+                        payerSubtitleTextView.setText("Guest"); // Or any other identifier for non-registered users
+                        payerInfoLayout.setBackgroundResource(R.drawable.rounded_background_light_orange);
+                        payerAmountTextView.setText(String.format(Locale.getDefault(), "$%.2f", expense.getAmount()));
+                    }
                 }
-                setupParticipantsRecyclerView(expense.getParticipants(), expense.getMemberAmounts());
+
+                setupParticipantsRecyclerView(expense.getParticipants(), expense.getMemberAmounts(), currentUser);
             }
         });
     }
-    private void setupParticipantsRecyclerView(List<String> participantIds, Map<String, Double> memberAmounts) {
+
+    // Method to check if an ID is a user ID
+    private boolean isUserId(String id) {
+        // Implement logic to check if the ID is a user ID or a guest identifier
+        // For example, check the format or length of the ID
+        return id.length() == 28; // Assuming user IDs are 28 characters long
+    }
+
+    private void setupParticipantsRecyclerView(List<String> participantIds, Map<String, Double> memberAmounts, FirebaseUser currentUser) {
         if (participantIds == null || participantIds.isEmpty()) {
             Log.e(TAG, "Participant IDs list is null or empty");
             return;
         }
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            Log.e(TAG, "User not logged in");
-            return;
-        }
-
-        participantAdapter = new ParticipantAdapter(new ArrayList<>(), currentUser.getUid());
-        participantsRecyclerView.setAdapter(participantAdapter);
+        // Use a local list to collect participant items
+        List<ParticipantItem> participantItems = new ArrayList<>();
 
         for (String participantId : participantIds) {
-            userRepository.fetchUserById(participantId).observe(this, user -> {
-                if (user != null) {
-                    double amount = memberAmounts.getOrDefault(participantId, 0.00);
-                    participantAdapter.addParticipant(new ParticipantItem(user, amount));
-                } else {
-                    Log.e(TAG, "User data is null for participant ID: " + participantId);
-                }
-            });
+            // Determine if the participant is the current user or a guest
+            if (isCurrentUser(participantId, currentUser)) {
+                fetchAndAddCurrentUser(participantItems, memberAmounts, participantIds.size());
+            } else {
+                // Treat as guest participant
+                addGuestParticipant(participantItems, participantId, memberAmounts, participantIds.size());
+            }
         }
     }
 
+    private boolean isCurrentUser(String participantId, FirebaseUser currentUser) {
+        return currentUser != null && participantId.equals(currentUser.getUid());
+    }
+
+    private void fetchAndAddCurrentUser(List<ParticipantItem> participantItems, Map<String, Double> memberAmounts, int totalParticipants) {
+        userRepository.fetchUserById(FirebaseAuth.getInstance().getCurrentUser().getUid()).observe(this, user -> {
+            if (user != null) {
+                double amount = memberAmounts.getOrDefault(user.getUserId(), 0.00);
+                participantItems.add(new ParticipantItem(user, amount));
+                checkAndUpdateAdapter(participantItems, totalParticipants);
+            } else {
+                Log.e(TAG, "Current user data is null");
+            }
+        });
+    }
+
+    private void addGuestParticipant(List<ParticipantItem> participantItems, String participantId, Map<String, Double> memberAmounts, int totalParticipants) {
+        double amount = memberAmounts.getOrDefault(participantId, 0.00);
+        participantItems.add(new ParticipantItem(participantId, amount));
+        checkAndUpdateAdapter(participantItems, totalParticipants);
+    }
+
+    private void checkAndUpdateAdapter(List<ParticipantItem> participantItems, int totalParticipants) {
+        if (participantItems.size() == totalParticipants) {
+            // Update the adapter with the complete list
+            participantAdapter.updateParticipants(participantItems);
+        }
+    }
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
