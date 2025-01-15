@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
 
     <application
         android:name=".ui.chat.BaseApplication"
@@ -13,6 +15,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PayDay"
         tools:targetApi="31">
+        <receiver android:name=".utils.NetworkChangeReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"
+                    tools:ignore="BatteryLife" />
+            </intent-filter>
+        </receiver>
         <!-- SplashActivity is the LAUNCHER (first screen) -->
         <activity
             android:name=".ui.auth.SplashActivity"
@@ -56,6 +65,7 @@
         <activity
             android:name=".ui.profile.DonationDetailsActivity"
             android:exported="false" />
+
 
 
     </application>
